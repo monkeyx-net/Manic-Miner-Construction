@@ -4,6 +4,8 @@
 
 Originally written in 1983 by Matthew Smith. This port has been created to help people enjoy playing the game on modern platforms, and to have fun editing and creating their own levels.
 
+Based on Steve Clark's SDL2 port, [fawtytoo/ManicMiner](https://github.com/fawtytoo/ManicMiner), and distributed under the same zlib licence (see [LICENCE](LICENCE)).
+
 ## Tech Specs
 
 | Property | Value |
