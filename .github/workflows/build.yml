@@ -1,0 +1,237 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  GAME_NAME: "ManicMiner"
+
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+
+  # ---------------------------------------------------------------------------
+  # 0. Read version from CHANGELOG.md; skip everything if already released
+  # ---------------------------------------------------------------------------
+  version:
+    name: Read version
+    runs-on: ubuntu-latest
+    outputs:
+      tag:     ${{ steps.read.outputs.tag }}
+      version: ${{ steps.read.outputs.version }}
+      exists:  ${{ steps.read.outputs.exists }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check levels.json formatting
+        run: python3 tools/fmt_levels.py --check
+
+      - name: Read version and check release
+        id: read
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(grep -m1 '^### ' CHANGELOG.md \
+            | sed -E 's/^### (v[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=${VERSION}"     >> $GITHUB_OUTPUT
+
+          if [ "${{ github.event_name }}" = "push" ] && \
+             gh release view "${VERSION}" > /dev/null 2>&1; then
+            echo "exists=true"  >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+  # ---------------------------------------------------------------------------
+  # 1. Native builds – Linux x64, Linux arm64, macOS arm64
+  # ---------------------------------------------------------------------------
+  build-native:
+    name: Build ${{ matrix.os }} (${{ matrix.arch }})
+    needs: version
+    if: needs.version.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: x64
+          - os: ubuntu-22.04-arm
+            arch: arm64
+          - os: macos-latest
+            arch: arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies (Linux)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: sudo apt-get update && sudo apt-get install -y ccache libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev
+
+      - name: Prepare CCACHE dir (Linux)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: mkdir -p /home/runner/.ccache
+
+      - name: Cache CCACHE (Linux)
+        if: startsWith(matrix.os, 'ubuntu')
+        uses: actions/cache@v3
+        with:
+          path: /home/runner/.ccache
+          key: linux-ccache-${{ hashFiles('**/build.yml') }}
+          restore-keys: |
+            linux-ccache-
+
+      - name: Add Homebrew bin to PATH
+        if: startsWith(matrix.os, 'macos')
+        run: echo "/opt/homebrew/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies (macOS)
+        if: startsWith(matrix.os, 'macos')
+        run: brew install ccache sdl2 sdl2_ttf sdl2_image sdl2_mixer
+
+      - name: Prepare CCACHE dir (macOS)
+        if: startsWith(matrix.os, 'macos')
+        run: mkdir -p /Users/runner/.ccache
+
+      - name: Cache CCACHE (macOS)
+        if: startsWith(matrix.os, 'macos')
+        uses: actions/cache@v3
+        with:
+          path: /Users/runner/.ccache
+          key: macos-ccache-${{ hashFiles('**/build.yml') }}
+          restore-keys: |
+            macos-ccache-
+
+      - name: Build (Linux)
+        if: startsWith(matrix.os, 'ubuntu')
+        env:
+          CC: "ccache gcc"
+          CXX: "ccache g++"
+        run: make
+
+      - name: Build (macOS)
+        if: startsWith(matrix.os, 'macos')
+        env:
+          CC: "ccache clang"
+          CXX: "ccache clang++"
+        run: make
+
+      - name: Package archive
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          OS_LOWER=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')
+          ARCHIVE="${{ env.GAME_NAME }}-${OS_LOWER}-${ARCH}.tar.gz"
+          tar czf "${ARCHIVE}" manicminer levels.json
+          echo "ARCHIVE_PATH=${ARCHIVE}" >> $GITHUB_ENV
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.GAME_NAME }}-${{ runner.os }}-${{ matrix.arch }}
+          path: "*.tar.gz"
+
+  # ---------------------------------------------------------------------------
+  # 2. Windows x64
+  # ---------------------------------------------------------------------------
+  build-windows:
+    name: Build Windows (x64)
+    needs: version
+    if: needs.version.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-pkg-config
+            mingw-w64-x86_64-SDL2
+            mingw-w64-x86_64-SDL2_ttf
+            mingw-w64-x86_64-SDL2_image
+            mingw-w64-x86_64-SDL2_mixer
+            make
+            zip
+      - name: Build
+        shell: msys2 {0}
+        run: |
+          make TARGET=manicminer.exe
+          cp /mingw64/bin/SDL2.dll .
+          cp /mingw64/bin/SDL2_ttf.dll .
+          cp /mingw64/bin/SDL2_image.dll .
+          cp /mingw64/bin/SDL2_mixer.dll .
+      - name: Package archive
+        shell: msys2 {0}
+        env:
+          GAME_NAME: ${{ env.GAME_NAME }}
+        run: |
+          mkdir -p "${GAME_NAME}-windows-x64"
+          cp manicminer.exe SDL2.dll SDL2_ttf.dll SDL2_image.dll SDL2_mixer.dll levels.json "${GAME_NAME}-windows-x64/"
+          zip -9 -r "${GAME_NAME}-windows-x64.zip" "${GAME_NAME}-windows-x64/"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.GAME_NAME }}-Windows-x64
+          path: "*.zip"
+
+  # ---------------------------------------------------------------------------
+  # 3. Web (Emscripten)
+  # ---------------------------------------------------------------------------
+  build-web:
+    name: Build Web
+    needs: version
+    if: needs.version.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: emscripten-core/setup-emsdk@v11
+      - name: Build
+        run: make web
+      - name: Package archive
+        run: zip -9 -r "${{ env.GAME_NAME }}-web.zip" web/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.GAME_NAME }}-Web
+          path: "*.zip"
+
+  # ---------------------------------------------------------------------------
+  # 4. Publish GitHub Release with all artifacts
+  # ---------------------------------------------------------------------------
+  release:
+    name: Publish GitHub Release
+    needs: [version, build-native, build-windows, build-web]
+    if: github.event_name == 'push' && needs.version.outputs.exists == 'false'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: artifacts/
+
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          VERSION="${{ needs.version.outputs.version }}"
+          # Extract the Tech Specs block (top of file up to first ---)
+          awk '/^---$/{exit} {print}' CHANGELOG.md > release_notes.txt
+          echo "" >> release_notes.txt
+          echo "---" >> release_notes.txt
+          echo "Full changelog: [CHANGELOG.md](CHANGELOG.md)" >> release_notes.txt
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.version.outputs.tag }}
+        run: |
+          gh release create "${TAG}" \
+            --title "${{ env.GAME_NAME }} ${TAG}" \
+            --notes-file release_notes.txt \
+            artifacts/*.tar.gz \
+            artifacts/*.zip
