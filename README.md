@@ -6,6 +6,51 @@ Originally written in 1983 by Matthew Smith. This port has been created to help 
 
 Based on Steve Clark's SDL2 port, [fawtytoo/ManicMiner](https://github.com/fawtytoo/ManicMiner), and distributed under the same zlib licence (see [LICENCE](LICENCE)).
 
+## Fork History
+
+Hard fork of [fawtytoo/ManicMiner](https://github.com/fawtytoo/ManicMiner) by Steve Clark,
+taken on 9 May 2026 at upstream commit `73c1eb6` ("Add missing swordfish"). Upstream
+changes after that date (joystick support, 9-lives cap, robot data rework) were not merged.
+Where this fork has the same features, they were written separately.
+
+### Changes since the fork
+
+**Level data**
+- Levels, NPCs, miner start and portals moved from C tables (`levels.c`, `robots.c`) to `levels.json`.
+- JSON parser added (`json.c`). `levels.json` is checked field by field on load (`gamedata.c`).
+- NPC logic rewritten as `npcs.c` (replaces `robots.c`).
+
+**Graphics**
+- Hi-res 512×256 playfield: 32×32 PNG sprites (miner, NPCs, portals, boot) and a per-level tile sheet (`hires.c`).
+- SDL_ttf fonts (pixeldroid Console, PressStart2P, MANICMINER-Regular) replace the bitmap character sets.
+- Pixel-perfect miner-vs-NPC collision using a separate mask (`collision.c`).
+- Fullscreen-desktop by default; windowed 3× scale; F11 / Alt+Enter toggle.
+
+**Audio**
+- SDL_mixer with OGG music and sound effects replaces the square-wave synthesised scores.
+
+**New features**
+- 5 save-state slots (`savestate.c`).
+- Replay recording and playback (`replay.c`).
+- Per-level high scores saved to `gameconfig.dat`.
+- Options menu (lives, starting level, replay).
+- Demo mode.
+- Game controller support.
+- Command-line options.
+- Startup check for every asset, listing each missing or invalid file (`assets.c`).
+
+**Removed**
+- Cheat mode.
+- Win32 / Visual Studio 2015 project and Debian packaging.
+
+**Tooling**
+- Browser level editor (`web/editor/`) and Emscripten web build (`make web`, `shell.html`).
+- Headless regression simulator (`tests/sim.c`, `make sim`).
+- Python asset tools in `tools/`: `c_to_json.py`, `gen_sprites.py`, `gen_title.py`, `gen_audio.py`, `fmt_levels.py`, `convert_style.py`.
+- Code restyled from `CamelCase` (`Video_Write`) to `snake_case` (`video_write`).
+
+---
+
 ## Tech Specs
 
 | Property | Value |
