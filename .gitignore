@@ -1,0 +1,6 @@
+manicminer
+*.dat
+webobj/
+linux/
+sim
+sim.d

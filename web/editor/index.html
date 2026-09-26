@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Manic Miner Construction Kit</title>
+        <link rel="stylesheet" href="css/style.css" />
+    </head>
+    <body>
+        <!-- ── Header ─────────────────────────────────────────────────────────── -->
+        <header class="app-header">
+            <div class="brand">
+                <span class="brand-gem">⛏</span>
+                <span>MANIC MINER CONSTRUCTION KIT</span>
+            </div>
+            <div class="header-actions">
+                <button id="btn-import" class="btn">📂 Import JSON</button>
+                <button id="btn-export" class="btn btn-primary">
+                    💾 Export JSON
+                </button>
+                <button id="btn-export-sprites" class="btn">
+                    🖼 Export Sprites
+                </button>
+                <input type="file" id="file-input" accept=".json" hidden />
+            </div>
+        </header>
+
+        <!-- ── Workspace ──────────────────────────────────────────────────────── -->
+        <div class="workspace">
+            <!-- Level list sidebar -->
+            <aside class="panel panel-levels">
+                <div class="panel-header">Levels</div>
+                <div id="level-list" class="level-list"></div>
+                <div class="panel-footer">
+                    <button
+                        id="btn-add-level"
+                        class="btn btn-sm btn-success"
+                        title="Add new level"
+                    >
+                        +
+                    </button>
+                    <button
+                        id="btn-dup-level"
+                        class="btn btn-sm"
+                        title="Duplicate level"
+                    >
+                        ⊕
+                    </button>
+                    <button
+                        id="btn-del-level"
+                        class="btn btn-sm btn-danger"
+                        title="Delete level"
+                    >
+                        −
+                    </button>
+                    <button
+                        id="btn-level-up"
+                        class="btn btn-sm"
+                        title="Move level up"
+                    >
+                        ↑
+                    </button>
+                    <button
+                        id="btn-level-down"
+                        class="btn btn-sm"
+                        title="Move level down"
+                    >
+                        ↓
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main editor -->
+            <main class="editor-main">
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <div class="tool-group">
+                        <button
+                            class="tool-btn active"
+                            data-tool="paint"
+                            title="Paint tile (Q)"
+                        >
+                            🖌 Paint
+                        </button>
+                        <button
+                            class="tool-btn"
+                            data-tool="erase"
+                            title="Erase tile (W)"
+                        >
+                            ◻ Erase
+                        </button>
+                        <button
+                            class="tool-btn"
+                            data-tool="fill"
+                            title="Flood fill (F)"
+                        >
+                            🪣 Fill
+                        </button>
+                        <button
+                            class="tool-btn"
+                            data-tool="npc"
+                            title="Place npc (R) — left-click tile to place, click npc to select"
+                        >
+                            🤖 Npc
+                        </button>
+                        <button
+                            class="tool-btn"
+                            data-tool="portal"
+                            title="Place portal (P) — click to move"
+                        >
+                            🚪 Portal
+                        </button>
+                        <button
+                            class="tool-btn"
+                            data-tool="start"
+                            title="Set miner start (S) — click to move"
+                        >
+                            🧑 Start
+                        </button>
+                    </div>
+                    <div class="tool-sep"></div>
+                    <div class="tool-group">
+                        <span class="tool-label">Zoom</span>
+                        <button
+                            id="zoom-out"
+                            class="btn btn-sm"
+                            title="Zoom out (-)"
+                        >
+                            −
+                        </button>
+                        <span id="zoom-label" class="zoom-label">3×</span>
+                        <button
+                            id="zoom-in"
+                            class="btn btn-sm"
+                            title="Zoom in (+)"
+                        >
+                            +
+                        </button>
+                    </div>
+                    <div class="tool-sep"></div>
+                    <div class="tool-group">
+                        <label class="checkbox-row"
+                            ><input type="checkbox" id="show-grid" checked />
+                            Grid</label
+                        >
+                        <label class="checkbox-row"
+                            ><input type="checkbox" id="show-sprites" checked />
+                            Sprites</label
+                        >
+                        <label class="checkbox-row"
+                            ><input type="checkbox" id="show-gap-warnings" checked />
+                            Gap check</label
+                        >
+                    </div>
+                </div>
+
+                <!-- Canvas -->
+                <div class="canvas-scroll" id="canvas-scroll">
+                    <div class="canvas-container">
+                        <canvas id="level-canvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Level metadata -->
+                <div class="level-meta">
+                    <label
+                        >Name
+                        <input
+                            type="text"
+                            id="level-name"
+                            class="input-text"
+                            maxlength="32"
+                            placeholder="Level name…"
+                        />
+                    </label>
+                    <label
+                        >Air
+                        <input
+                            type="number"
+                            id="level-air"
+                            class="input-num"
+                            min="0"
+                            max="65535"
+                            value="8192"
+                        />
+                    </label>
+                    <label
+                        >Border colour
+                        <select id="level-border" class="input-sel"></select>
+                    </label>
+                </div>
+            </main>
+
+            <!-- Properties panel -->
+            <aside class="panel panel-props">
+                <!-- Npc properties (shown when npc selected) -->
+                <div id="npc-props" style="display: none">
+                    <div class="panel-header">Npc Properties</div>
+                    <div class="props-section">
+                        <div class="prop-row">
+                            <label
+                                >Sprite type
+                                <select id="npc-gfx" class="input-sel"></select>
+                            </label>
+                        </div>
+                        <div class="prop-row">
+                            <label
+                                >Ink colour
+                                <select id="npc-ink" class="input-sel"></select>
+                            </label>
+                        </div>
+                        <div class="prop-row">
+                            <label
+                                >Frames
+                                <select id="npc-nframes" class="input-sel">
+                                    <option value="3">4 frames</option>
+                                    <option value="7">8 frames</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="prop-row">
+                            <label
+                                >Movement
+                                <select id="npc-move" class="input-sel">
+                                    <option value="0">None</option>
+                                    <option value="1">← Left</option>
+                                    <option value="2">→ Right</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="prop-row">
+                            <label
+                                >Speed (ticks/px)
+                                <input
+                                    type="number"
+                                    id="npc-speed"
+                                    class="input-num"
+                                    min="0"
+                                    max="16"
+                                    value="0"
+                                />
+                            </label>
+                        </div>
+                        <div class="prop-row">
+                            <label
+                                >Min X (pixels)
+                                <input
+                                    type="number"
+                                    id="npc-min"
+                                    class="input-num"
+                                    min="0"
+                                    max="255"
+                                    value="0"
+                                />
+                            </label>
+                        </div>
+                        <div class="prop-row">
+                            <label
+                                >Max X (pixels)
+                                <input
+                                    type="number"
+                                    id="npc-max"
+                                    class="input-num"
+                                    min="0"
+                                    max="255"
+                                    value="128"
+                                />
+                            </label>
+                        </div>
+                        <div class="prop-row">
+                            <button
+                                id="btn-del-npc"
+                                class="btn btn-sm btn-danger"
+                            >
+                                Delete Npc
+                            </button>
+                        </div>
+                        <div id="npc-sprite-preview" class="npc-preview"></div>
+                    </div>
+                </div>
+
+                <!-- Portal properties -->
+                <div id="portal-props" style="display: none">
+                    <div class="panel-header">Portal</div>
+                    <div class="props-section">
+                        <p class="hint-text">
+                            Click on the level to move the portal.
+                        </p>
+                        <div class="prop-row">
+                            <label
+                                >Colour 0 (paper)
+                                <select
+                                    id="portal-c0"
+                                    class="input-sel"
+                                ></select>
+                            </label>
+                        </div>
+                        <div class="prop-row">
+                            <label
+                                >Colour 1 (ink)
+                                <select
+                                    id="portal-c1"
+                                    class="input-sel"
+                                ></select>
+                            </label>
+                        </div>
+                        <div
+                            id="portal-sprite-preview"
+                            class="portal-preview"
+                        ></div>
+                    </div>
+                </div>
+
+                <!-- Miner start properties -->
+                <div id="start-props" style="display: none">
+                    <div class="panel-header">Miner Start</div>
+                    <div class="props-section">
+                        <p class="hint-text">
+                            Click on the level to move the start position.
+                        </p>
+                        <div class="prop-row">
+                            <label
+                                >Miner colour
+                                <select
+                                    id="start-ink"
+                                    class="input-sel"
+                                ></select>
+                            </label>
+                        </div>
+                        <div class="prop-row">
+                            <label
+                                >Facing
+                                <select id="start-dir" class="input-sel">
+                                    <option value="0">Right →</option>
+                                    <option value="1">Left ←</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div
+                            id="miner-sprite-preview"
+                            class="miner-preview"
+                        ></div>
+                    </div>
+                </div>
+
+                <!-- Default info -->
+                <div id="tile-info">
+                    <div class="panel-header">Tools</div>
+                    <div class="props-section">
+                        <p class="hint-text">
+                            <strong>Paint (Q)</strong> — paint selected GFX
+                            slot<br />
+                            <strong>Erase (W)</strong> — set tile to slot 0
+                            (space)<br />
+                            <strong>Fill (F)</strong> — flood fill connected
+                            tiles<br />
+                            <strong>Npc (R)</strong> — click empty tile to place
+                            npc; click npc to select &amp; configure<br />
+                            <strong>Portal (P)</strong> — click to move exit
+                            portal<br />
+                            <strong>Start (S)</strong> — click to move miner
+                            start<br />
+                            <br />
+                            <strong>Right-click palette</strong> — edit slot
+                            type/colour<br />
+                            <strong>Left-click palette</strong> — set paint
+                            slot<br />
+                            <strong>Right-click canvas</strong> — quick erase<br />
+                        </p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- ── Bottom Panel: GFX palette + tile designer + sprite designer ─────── -->
+        <div class="bottom-panel">
+            <!-- GFX slot palette -->
+            <div class="gfx-palette-section">
+                <div class="section-header">
+                    GFX Slots
+                    <span class="hint-small"
+                        >left-click = paint &nbsp;|&nbsp; right-click =
+                        edit</span
+                    >
+                </div>
+                <div id="gfx-slots" class="gfx-slots-grid"></div>
+            </div>
+
+            <!-- Tile designer -->
+            <div class="designer-section">
+                <div class="section-header">
+                    Tile — Slot <span id="designer-slot-num">0</span>
+                </div>
+                <div class="designer-layout">
+                    <div class="designer-controls">
+                        <div class="ctrl-row">
+                            <label style="display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--text-muted)">
+                                Tile type
+                                <select id="tile-type" class="input-sel"></select>
+                            </label>
+                        </div>
+                        <div class="ctrl-row">
+                            <label style="display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--text-muted)">
+                                Paper
+                                <select id="tile-paper" class="input-sel"></select>
+                            </label>
+                            <label style="display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--text-muted)">
+                                Ink
+                                <select id="tile-ink" class="input-sel"></select>
+                            </label>
+                        </div>
+                        <div>
+                            <div class="preview-label">Preview (×8)</div>
+                            <canvas id="tile-preview" width="64" height="64"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sprite designer -->
+            <div class="designer-section">
+                <div class="section-header">
+                    Sprite Designer — Type <span id="sprite-type-num">0</span>
+                    &nbsp;Frame <span id="sprite-frame-num">0</span>
+                </div>
+                <div class="designer-layout">
+                    <canvas
+                        id="sprite-designer-canvas"
+                        width="192"
+                        height="192"
+                        title="Left-drag to set pixels · Right-drag to clear pixels"
+                    ></canvas>
+                    <div class="designer-controls">
+                        <div class="ctrl-row">
+                            <label style="display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--text-muted)">
+                                Type (0–28)
+                                <input type="number" id="sprite-type-sel" class="input-num" min="0" max="28" value="0" style="width:56px" />
+                            </label>
+                        </div>
+                        <div class="ctrl-row">
+                            <label style="display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--text-muted)">
+                                Frame (0–7)
+                                <input type="number" id="sprite-frame-sel" class="input-num" min="0" max="7" value="0" style="width:56px" />
+                            </label>
+                        </div>
+                        <div class="ctrl-row">
+                            <label style="display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--text-muted)">
+                                Ink colour
+                                <select id="sprite-ink-sel" class="input-sel"></select>
+                            </label>
+                        </div>
+                        <div class="ctrl-row">
+                            <button id="btn-sprite-clear" class="btn btn-sm btn-danger">Clear</button>
+                            <button id="btn-sprite-fill"  class="btn btn-sm">Fill</button>
+                            <button id="btn-sprite-copy"  class="btn btn-sm">Copy</button>
+                            <button id="btn-sprite-paste" class="btn btn-sm">Paste</button>
+                        </div>
+                        <div class="ctrl-row">
+                            <button id="btn-sprite-flip-h" class="btn btn-sm">Flip H</button>
+                            <button id="btn-sprite-flip-v" class="btn btn-sm">Flip V</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="module" src="js/app.js"></script>
+    </body>
+</html>
