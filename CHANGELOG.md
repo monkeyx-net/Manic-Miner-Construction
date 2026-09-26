@@ -12,6 +12,12 @@
 #### Build & Release
 
 - **CI build and release workflow** — new GitHub Actions workflow (`.github/workflows/build.yml`) checks `levels.json` formatting, builds Linux (x64/arm64), macOS (arm64), Windows (x64) and Web packages, and publishes a GitHub Release tagged from the top CHANGELOG version if that tag doesn't exist yet.
+- **Assets in release packages** — Linux, macOS and Windows packages now include the `gfx/` and `sfx/` folders the game loads at runtime.
+- **Windows DLL dependencies** — the Windows package now bundles every MinGW DLL `manicminer.exe` depends on (found with `ldd`), not just the four SDL2 DLLs, so it runs on a clean PC.
+
+#### Assets
+
+- **Unused assets moved out** — files the game and tools don't load (old `MANIC/` data, GIMP `.xcf` sources, spare sprite sheets, font project files, and unused music/sound tracks) moved from `gfx/` and `sfx/` to `gfx_none/` and `sfx_none/`, keeping them out of the packages and the web build.
 
 #### Documentation
 

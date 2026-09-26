@@ -125,7 +125,7 @@ jobs:
         run: |
           OS_LOWER=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')
           ARCHIVE="${{ env.GAME_NAME }}-${OS_LOWER}-${ARCH}.tar.gz"
-          tar czf "${ARCHIVE}" manicminer levels.json
+          tar czf "${ARCHIVE}" manicminer levels.json gfx sfx
           echo "ARCHIVE_PATH=${ARCHIVE}" >> $GITHUB_ENV
 
       - uses: actions/upload-artifact@v4
@@ -160,17 +160,15 @@ jobs:
         shell: msys2 {0}
         run: |
           make TARGET=manicminer.exe
-          cp /mingw64/bin/SDL2.dll .
-          cp /mingw64/bin/SDL2_ttf.dll .
-          cp /mingw64/bin/SDL2_image.dll .
-          cp /mingw64/bin/SDL2_mixer.dll .
+          # Copy every MinGW DLL the exe depends on (SDL2 libs plus png/ogg/freetype etc.)
+          ldd manicminer.exe | grep -i '/mingw64/' | awk '{print $3}' | xargs -I{} cp {} .
       - name: Package archive
         shell: msys2 {0}
         env:
           GAME_NAME: ${{ env.GAME_NAME }}
         run: |
           mkdir -p "${GAME_NAME}-windows-x64"
-          cp manicminer.exe SDL2.dll SDL2_ttf.dll SDL2_image.dll SDL2_mixer.dll levels.json "${GAME_NAME}-windows-x64/"
+          cp -r manicminer.exe *.dll levels.json gfx sfx "${GAME_NAME}-windows-x64/"
           zip -9 -r "${GAME_NAME}-windows-x64.zip" "${GAME_NAME}-windows-x64/"
       - uses: actions/upload-artifact@v4
         with:
