@@ -29,7 +29,7 @@ void title_init(void) {
         return;
     }
 
-    int pw = surf->w, ph = surf->h;   
+    int pw = surf->w, ph = surf->h;
     title_pixels = calloc(pw * ph / 8, 1);
     title_colour = calloc((ph / 8) * (pw / 8), 1);
     if (!title_pixels || !title_colour) { SDL_FreeSurface(surf); return; }
@@ -85,7 +85,7 @@ void title_init(void) {
 static const TICKER_SEG ticker_bugbyte[] = {
     {C_RED,"M"},{C_YELLOW,"A"},{C_GREEN,"N"},{C_LIGHT_BLUE,"I"},{C_MAGENTA,"C "},{C_LIGHT_BLUE,"M"},{C_MAGENTA,"I"},{C_RED,"N"},{C_YELLOW,"E"},{C_GREEN,"R   "},
     {C_WHITE,"(C) Bug-Byte Ltd. 1983   By Matthew Smith                                "},
-    {C_WHITE,"Cursor Keys = Left & Right   Space = Jump   Pause/Tab = Pause   Alt = Tune On/Off                                "},
+    {C_WHITE,"Cursor Keys = Left & Right   Space = Jump   Pause/Tab = Pause   Alt = Tune On/Off   O = Options   L = Load/Save   U = Save State   R = Start/Stop Recording             "},
     {C_WHITE,"Guide Miner Willy through 20 lethal caverns ..."},
     {0,NULL}
 };
@@ -123,7 +123,7 @@ static void do_title_drawer() {
 // Draws the full title screen: backdrop, coloured title font, pianist keyboard animation,
 // and scrolling ticker text; starts title music.
 static void do_title_init() {
-    game_config_save();  
+    game_config_save();
     title_screen_copy();
     video_pixel_fill(72 * WIDTH, 72 * WIDTH, 0xa);
     video_pixel_fill(144 * WIDTH, 48 * WIDTH, 0x0);
@@ -212,7 +212,7 @@ static void do_save_load_init() {
         video_write(120 * WIDTH + x, C_WHITE, "ESC=BACK", VIDEO_FONT_SMALL);
     }
     ticker = do_nothing;
-    drawer = do_nothing;  
+    drawer = do_nothing;
 }
 
 static void do_save_load_responder() {
@@ -311,7 +311,7 @@ static void do_options_init() {
     video_write(170 * WIDTH + 4, C_WHITE, "ENTER = OK   ESC = CANCEL", VIDEO_FONT_SMALL);
 
     ticker = do_nothing;
-    drawer = do_nothing;  
+    drawer = do_nothing;
 }
 
 static void do_options_responder() {
@@ -358,7 +358,7 @@ static void do_options_responder() {
 static void DoOptionsAction() {
     responder = do_options_responder;
     ticker = do_options_init;
-    drawer = do_nothing;  
+    drawer = do_nothing;
     action = do_nothing;
 }
 
@@ -386,7 +386,7 @@ static void do_title_responder() {
         }
         video_write(172 * WIDTH, C_RED, "PRESS ANY KEY TO RETURN", VIDEO_FONT_SMALL);
         ticker = do_nothing;
-        drawer = do_nothing;  
+        drawer = do_nothing;
         responder = do_hi_scores_responder;
     } else if (game_input == KEY_O) {
         DoOptionsAction();
