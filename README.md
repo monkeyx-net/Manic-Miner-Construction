@@ -24,7 +24,7 @@ Where this fork has the same features, they were written separately.
 - Hi-res 512×256 playfield: 32×32 PNG sprites (miner, NPCs, portals, boot) and a per-level tile sheet (`hires.c`).
 - SDL_ttf fonts (pixeldroid Console, PressStart2P, MANICMINER-Regular) replace the bitmap character sets.
 - Pixel-perfect miner-vs-NPC collision using a separate mask (`collision.c`).
-- Fullscreen-desktop by default; windowed 3× scale; F11 / Alt+Enter toggle.
+- Windowed at 3× scale by default; fullscreen-desktop with `-f`; F11 / Alt+Enter toggle.
 
 **Audio**
 - SDL_mixer with OGG music and sound effects replaces the square-wave synthesised scores.
@@ -58,7 +58,7 @@ Where this fork has the same features, they were written separately.
 | Language | C (C99), JavaScript (ES modules) |
 | Version | v0.0.6 |
 | Renderer | SDL2 — hi-res 512×256 playfield (tiles and sprites, including the death, level-transition and pause screens); integer-scaled 256×192 low-res canvas for the title screen, menus and HUD |
-| Display | Fullscreen-desktop default; windowed at 3× scale; F11 / Alt+Enter toggles |
+| Display | Windowed at 3× scale by default; fullscreen-desktop with `-f`; F11 / Alt+Enter toggles |
 | Frame rate | 60 fps tick rate; timer-gated main loop drives action → input → tick → draw |
 | Colour palette | 16 colours (ZX Spectrum-inspired); per-pixel colouring eliminates colour clash |
 | Audio | SDL_mixer at 22 050 Hz stereo; OGG music tracks; OGG SFX; synthesised square-wave miner notes (128 pitches, equal temperament) |
@@ -196,7 +196,8 @@ Entering the portal on the final level triggers the victory sequence (swordfish 
 manicminer [options]
 
   -h,  --help             Show help and exit
-  -w,  --window           Start in windowed mode (default: fullscreen)
+  -w,  --window           Start in a window (default)
+  -f,  --fullscreen       Start fullscreen
   -s,  --scale N          Set window scale factor 1–8 (default: 3, implies --window)
        --screenshot PATH  Save a PNG screenshot after 400 frames and exit (implies --window)
   -ns, --nosticks         Disable game controller / joystick support

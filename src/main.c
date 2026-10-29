@@ -50,7 +50,7 @@ static void ctrl_close(SDL_JoystickID id) {
 const COLOUR                *sys_border = &video_colour[0];
 
 static int                  game_running   = 1;
-static int                  is_fullscreen  = 1;
+static int                  is_fullscreen  = 0;
 static int                  window_scale   = 3;
 static const char          *screenshot_path = NULL;
 static int                  screenshot_frames = 0;
@@ -453,14 +453,18 @@ int main(int argc, char *argv[]) {
             printf("Usage: %s [OPTIONS]\n\n"
                    "Options:\n"
                    "  -h, --help              Show this help message and exit\n"
-                   "  -w, --window            Start in windowed mode (default: fullscreen)\n"
+                   "  -w, --window            Start in a window (default)\n"
+                   "  -f, --fullscreen        Start fullscreen\n"
                    "  -s, --scale N           Set window scale factor 1-8 (default: 3, implies --window)\n"
                    "      --screenshot PATH   Save PNG screenshot after 400 frames and exit\n"
-                   "  -ns, --nosticks         Disable game controller / joystick support\n",
+                   "  -ns, --nosticks         Disable game controller / joystick support\n"
+                   "\nF11 or Alt+Enter switches between window and fullscreen while playing.\n",
                    argv[0]);
             return 0;
         } else if (strcmp(argv[i], "--window") == 0 || strcmp(argv[i], "-w") == 0) {
             is_fullscreen = 0;
+        } else if (strcmp(argv[i], "--fullscreen") == 0 || strcmp(argv[i], "-f") == 0) {
+            is_fullscreen = 1;
         } else if ((strcmp(argv[i], "--scale") == 0 || strcmp(argv[i], "-s") == 0) && i + 1 < argc) {
             int s = atoi(argv[++i]);
             if (s >= 1 && s <= 8) { window_scale = s; is_fullscreen = 0; }
