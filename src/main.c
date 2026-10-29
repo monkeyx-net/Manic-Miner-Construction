@@ -91,6 +91,26 @@ int                         game_input;
 int                         video_sync = 0;
 
 static TIMER                timer_frame;
+static int                  refresh_rate;
+
+// Paces game ticks at TICKRATE per second from the refresh rate of the display the window
+// is on, since vsync presents one frame per refresh there. Checked every frame: the window
+// can move between monitors, and on Wayland its display is only known once it is shown.
+static void update_frame_timer(void) {
+    int rate = 60;
+#ifndef __EMSCRIPTEN__
+    SDL_DisplayMode dm;
+    int display = SDL_GetWindowDisplayIndex(sdlWindow);
+
+    if (display >= 0 && SDL_GetCurrentDisplayMode(display, &dm) == 0 && dm.refresh_rate > 0) {
+        rate = dm.refresh_rate;
+    }
+#endif
+    if (rate != refresh_rate) {
+        refresh_rate = rate;
+        timer_set(&timer_frame, TICKRATE, refresh_rate);
+    }
+}
 
 EVENT                       action = loader_action;
 EVENT                       responder = do_nothing;
@@ -365,6 +385,7 @@ static void main_loop_iteration(void) {
         return;
     }
 
+    update_frame_timer();
     frame = timer_update(&timer_frame);
 
     if (frame > 0) {
@@ -423,7 +444,6 @@ static void main_loop_iteration(void) {
 
 int main(int argc, char *argv[]) {
     int             win_w, win_h;
-    int             refresh_rate;
 #ifndef __EMSCRIPTEN__
     SDL_DisplayMode mode;
 #endif
@@ -516,12 +536,7 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < SDL_NumJoysticks(); i++) ctrl_open(i);
     }
 
-#ifdef __EMSCRIPTEN__
-    refresh_rate = 60;
-#else
-    refresh_rate = mode.refresh_rate > 0 ? mode.refresh_rate : 60;
-#endif
-    timer_set(&timer_frame, TICKRATE, refresh_rate);
+    update_frame_timer();
 
     game_config_load();
     replay_load();
