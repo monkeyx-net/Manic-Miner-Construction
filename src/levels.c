@@ -201,8 +201,15 @@ void level_collapse_tile(int tile) {
     level_tile_delete(tile);
 }
 
+// Cells beyond the top and bottom of the room are solid, so the miner cannot leave
+// through the open edges some imported (JSW64) rooms have.
 int level_get_tile_type(int tile) {
-    int type = level_tile[tile].type;
+    int type;
+
+    if (tile < 0 || tile >= 512) {
+        return T_SOLID;
+    }
+    type = level_tile[tile].type;
 
     if (type == T_VOID) {
         return T_SOLID;

@@ -128,20 +128,68 @@ static int IsSolid(int tile) {
     return 0;
 }
 
+static int is_ramp(int tile) {
+    int type = level_get_tile_type(tile);
+    return type == T_RAMPL || type == T_RAMPR;
+}
+
+// Walking up a ramp: a ramp rising the way the miner walks, in front of his lower body,
+// lifts him a whole cell as he steps onto it, if nothing solid is in the way.
+static int ramp_up(int dir) {
+    int front = miner_tile + 32 + (dir > 0 ? 2 : -1);
+    int dest  = miner_tile - 32 + dir;
+
+    if (miner_air != 0 || miner_tile < 33) return 0;
+    if (level_get_tile_type(front) != (dir > 0 ? T_RAMPR : T_RAMPL)) return 0;
+    if (level_get_tile_type(dest) == T_SOLID || level_get_tile_type(dest + 1) == T_SOLID ||
+        level_get_tile_type(dest + 32) == T_SOLID || level_get_tile_type(dest + 33) == T_SOLID) return 0;
+    miner_tile = dest;
+    miner_x += 8 * dir;
+    miner_y -= 8;
+    return 1;
+}
+
+// Walking down a ramp: a step that leaves both feet over nothing drops him a cell
+// instead of starting a fall, if there is a ramp one cell down or, coming off a ramp,
+// anything to stand on there.
+static void ramp_down(int was_on_ramp) {
+    int below = miner_tile + 64;
+
+    if (miner_air != 0 || below + 33 >= 512) return;
+    if (level_get_tile_type(below) > T_SPACE || level_get_tile_type(below + 1) > T_SPACE) return;
+    if (!is_ramp(below + 32) && !is_ramp(below + 33) &&
+        !(was_on_ramp && (level_get_tile_type(below + 32) > T_SPACE ||
+                          level_get_tile_type(below + 33) > T_SPACE))) return;
+    miner_tile += 32;
+    miner_y += 8;
+}
+
 static void MoveLeftRight() {
+    int on_ramp;
+
     if (miner_move == 0) return;
     if (miner_frame < 3) {
         miner_frame++;
         return;
     }
+    on_ramp = miner_tile + 65 < 512 && (is_ramp(miner_tile + 64) || is_ramp(miner_tile + 65));
+    // The left and right edges of the room are walls, even where the map is open.
     if (miner_dir == D_LEFT) {
-        if (IsSolid(miner_tile - 1)) return;
-        miner_tile--;
-        miner_x -= 8;
+        if (miner_x == 0) return;
+        if (!ramp_up(-1)) {
+            if (IsSolid(miner_tile - 1)) return;
+            miner_tile--;
+            miner_x -= 8;
+            ramp_down(on_ramp);
+        }
     } else {
-        if (IsSolid(miner_tile + 2)) return;
-        miner_tile++;
-        miner_x += 8;
+        if (miner_x >= 240) return;
+        if (!ramp_up(1)) {
+            if (IsSolid(miner_tile + 2)) return;
+            miner_tile++;
+            miner_x += 8;
+            ramp_down(on_ramp);
+        }
     }
     miner_frame = 0;
 }
