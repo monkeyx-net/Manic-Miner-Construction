@@ -36,6 +36,8 @@ static NPC    npc_start[MAX_LEVELS][8];
 static int      npc_align[8] = {4, 6, 6, 6, 6, 6, 6, 6};
 static NPC    npc_this[8], *cur_npc;
 
+static EVENT id_to_move(int id);
+
 // Steps an NPC one animation frame in the given direction (±1), reversing travel at min/max x bounds.
 static void do_npc_horizontal(int dir) {
     if (game_ticks & cur_npc->speed) return;
@@ -121,6 +123,24 @@ static void do_npc_eugene() {
     }
 
     cur_npc->ink = (cur_npc->ink - 1) & 0x7;
+}
+
+// A switch has changed how an NPC moves. Horizontal movers restart their walk cycle.
+void npcs_set_move(int slot, int active, int move_id) {
+    NPC *npc = &npc_this[slot];
+
+    npc->active = active;
+    npc->DoMove = active ? id_to_move(move_id) : do_nothing;
+    if (move_id == MOVE_LEFT || move_id == MOVE_RIGHT) {
+        npc->frame = move_id == MOVE_LEFT ? 7 : 0;
+    }
+}
+
+void npcs_set_limits(int slot, int min, int max, int speed, int gfx) {
+    npc_this[slot].min   = min;
+    npc_this[slot].max   = max;
+    npc_this[slot].speed = speed;
+    npc_this[slot].gfx   = gfx;
 }
 
 void npcs_eugene() {

@@ -72,6 +72,55 @@ static int get_bitmap(JSON *arr, u16 bitmap[16], const char *where) {
     return 1;
 }
 
+// A level's optional switches: [{cell, open: [cells], npc: {slot, active: 0} or
+// {slot, move, min, max, speed, gfx}}]. Loaded after the sprites, so gfx can be checked.
+static int load_switches(JSON *arr, int level, int sprites) {
+    static const char *keys[] = {"move", "min", "max", "speed", "gfx"};
+    const int lo[] = {MOVE_NONE,   0,   0,   0,  0};
+    const int hi[] = {MOVE_EUGENE, 255, 255, 16, sprites - 1};
+    SWITCH  sw[MAX_SWITCHES];
+    char    where[48], what[96];
+    int     n, i, k, *v[5];
+    JSON    *entry, *open, *npc;
+
+    if (!arr) return 1;
+    snprintf(where, sizeof where, "levels[%d]", level);
+    n = json_length(arr);
+    if (!json_is_array(arr) || n > MAX_SWITCHES) {
+        return fail("%s.switches must be a list of up to %d switches", where, MAX_SWITCHES);
+    }
+    for (i = 0; i < n; i++) {
+        entry = json_index(arr, i);
+        snprintf(what, sizeof what, "%s.switches[%d]", where, i);
+        if (!get_field(entry, "cell", 0, 511, &sw[i].cell, what)) return 0;
+
+        open = json_get(entry, "open");
+        sw[i].nopen = json_length(open);
+        if (!json_is_array(open) || sw[i].nopen > MAX_SWITCH_OPEN) {
+            return fail("%s.open must be a list of up to %d cells", what, MAX_SWITCH_OPEN);
+        }
+        snprintf(what, sizeof what, "%s.switches[%d].open", where, i);
+        if (!get_ints(open, sw[i].nopen, 0, 511, sw[i].open, what)) return 0;
+
+        sw[i].npc_slot = -1;
+        npc = json_get(entry, "npc");
+        if (!npc) continue;
+        snprintf(what, sizeof what, "%s.switches[%d].npc", where, i);
+        if (!get_field(npc, "slot", 0, 7, &sw[i].npc_slot, what)) return 0;
+        sw[i].npc_active = 1;
+        if (json_get(npc, "active") &&
+            !get_field(npc, "active", 0, 1, &sw[i].npc_active, what)) return 0;
+        if (!sw[i].npc_active) continue;
+        v[0] = &sw[i].npc_move;  v[1] = &sw[i].npc_min;   v[2] = &sw[i].npc_max;
+        v[3] = &sw[i].npc_speed; v[4] = &sw[i].npc_gfx;
+        for (k = 0; k < 5; k++) {
+            if (!get_field(npc, keys[k], lo[k], hi[k], v[k], what)) return 0;
+        }
+    }
+    level_set_switches(level, n, sw);
+    return 1;
+}
+
 static int load_level(JSON *entry, int i) {
     char    where[48], what[96];
     int     data[512];
@@ -100,7 +149,7 @@ static int load_level(JSON *entry, int i) {
         snprintf(what, sizeof what, "%s.info[%d]", where, j);
         if (!get_field(json_index(sub, j), "colour", 0, 255, &value, what)) return 0;
         colours[j] = (u8)value;
-        if (!get_field(json_index(sub, j), "type", T_ITEM, T_VOID, &types[j], what)) return 0;
+        if (!get_field(json_index(sub, j), "type", T_ITEM, T_RAMPR, &types[j], what)) return 0;
     }
 
     level_set_entry(i, json_string(name), data, slots, colours, types);
@@ -183,6 +232,11 @@ int game_data_load(const char *path) {
             if (!get_bitmap(json_index(entry, j), frames[j], where)) goto done;
         }
         npcs_set_sprite(i, frames);
+    }
+
+    section = json_get(root, "levels");
+    for (i = 0; i < n; i++) {
+        if (!load_switches(json_get(json_index(section, i), "switches"), i, sprites)) goto done;
     }
 
     section = json_get(root, "miner_sprite");

@@ -413,11 +413,325 @@ def dump(tap, n):
           'conveyor', room.conveyor, 'dir', room.conv_dir, 'flags %02x' % room.flags)
 
 
+# ---------------------------------------------------------------------------
+# Import into levels.json and the sprite sheets
+# ---------------------------------------------------------------------------
+
+BASE_LEVELS, BASE_SPRITES = 20, 29   # the original Manic Miner data kept in front
+FIRST_START = (28, 3, 1)             # level 1 Willy x, y, dir: read off the map sheet
+
+# Port tile types (src/game.h)
+T_ITEM, T_SWITCHOFF, T_SPACE, T_SOLID, T_FLOOR, T_COLLAPSE = 0, 1, 3, 4, 5, 6
+T_CONVEYL, T_CONVEYR, T_HARM, T_TRAMP, T_RAMPL, T_RAMPR = 7, 8, 9, 11, 12, 13
+JSW_TO_PORT = {0: T_SPACE, 1: T_FLOOR, 2: T_SOLID, 3: T_HARM, 4: T_RAMPL,
+               5: T_RAMPR, 6: T_CONVEYL, 7: T_CONVEYR, 8: T_COLLAPSE, 9: T_TRAMP}
+MOVE_LEFT, MOVE_RIGHT, MOVE_UP, MOVE_DOWN = 1, 2, 3, 4
+
+# ZX colour (0-7) -> port palette index (src/misc.h), normal and bright
+ZX_NORMAL = [0, 9, 10, 3, 12, 5, 14, 7]
+ZX_BRIGHT = [0, 1, 2, 3, 4, 5, 6, 7]
+
+
+def port_ink(attr):
+    return (ZX_BRIGHT if attr & 0x40 else ZX_NORMAL)[attr & 7]
+
+
+def port_paper(attr):
+    return (ZX_BRIGHT if attr & 0x40 else ZX_NORMAL)[(attr >> 3) & 7]
+
+
+def port_colour(attr):
+    return port_paper(attr) << 4 | port_ink(attr)
+
+
+def scale2x(bits):
+    """bits: list of rows of 0/1. Returns the Scale2x-upscaled rows."""
+    h, w = len(bits), len(bits[0])
+
+    def px(x, y):
+        return bits[min(max(y, 0), h - 1)][min(max(x, 0), w - 1)]
+    out = [[0] * (w * 2) for _ in range(h * 2)]
+    for y in range(h):
+        for x in range(w):
+            p, a, b, c, d = px(x, y), px(x, y - 1), px(x + 1, y), px(x - 1, y), px(x, y + 1)
+            out[2 * y][2 * x] = a if c == a and c != d and a != b else p
+            out[2 * y][2 * x + 1] = b if a == b and a != c and b != d else p
+            out[2 * y + 1][2 * x] = c if d == c and d != b and c != a else p
+            out[2 * y + 1][2 * x + 1] = d if b == d and b != a and d != c else p
+    return out
+
+
+def bytes_to_bits(rows, width):
+    return [[(r >> (width - 1 - c)) & 1 for c in range(width)] for r in rows]
+
+
+def paste_bits(img, bits, ox, oy):
+    for y, row in enumerate(bits):
+        for x, v in enumerate(row):
+            img.putpixel((ox + x, oy + y), (255, 255, 255, 255) if v else (0, 0, 0, 0))
+
+
+class Importer:
+    def __init__(self, game):
+        self.game = game
+        self.sprites = []        # 8 frames x 16 rows, new sprites only
+        self.sprite_ids = {}     # page bytes -> index into self.sprites
+        self.sprite_names = []
+        self.notes = []
+
+    def sprite(self, data, name):
+        key = bytes(data)
+        if key not in self.sprite_ids:
+            self.sprite_ids[key] = len(self.sprites)
+            self.sprites.append([[key[f * 32 + 2 * r] << 8 | key[f * 32 + 2 * r + 1]
+                                  for r in range(16)] for f in range(8)])
+            self.sprite_names.append(name)
+        return BASE_SPRITES + self.sprite_ids[key]
+
+    def note(self, level, text):
+        self.notes.append('%d %s: %s' % (level, self.room.name, text))
+
+    def level(self, room, idx, start):
+        """Convert one room. Returns (level, npcs, miner, portal, tile_bits)."""
+        self.room = room
+        g = self.game
+        slots = []          # [type, colour, 16x16 bits]
+        slot_of = {}
+
+        def add(key, typ, colour, bits16):
+            if key not in slot_of:
+                slot_of[key] = len(slots)
+                slots.append([typ, colour, bits16])
+            return slot_of[key]
+
+        def def_bits(k):
+            return scale2x(bytes_to_bits(room.defs[k][1], 8))
+
+        # Slot 0 is the background: its paper is the level's background colour.
+        air_attr = room.defs[0][0]
+        add(('cell', air_attr), T_SPACE, port_colour(air_attr), def_bits(0))
+        data = [0] * 512
+        for y in range(16):
+            for x in range(32):
+                a = room.map[y * 32 + x]
+                k = room.attr_to_def.get(a)
+                typ = JSW_TO_PORT[room.cell_type[k]] if k is not None else T_FLOOR
+                data[y * 32 + x] = add(('cell', a), typ, port_colour(a),
+                                       def_bits(1 if k is None else k))
+
+        # Items: the cell becomes an item tile on the background's paper.
+        item_bits = scale2x(bytes_to_bits(room.item_gfx, 8))
+        for x, y in room.items:
+            data[y * 32 + x] = add(('item',), T_ITEM, port_colour(air_attr) & 0xF0 | 6, item_bits)
+
+        # Guardians, switches, walls and triggers.
+        recs = room.guardians
+        npcs, npc_slot, switches = [], {}, {}
+        for i, gd in enumerate(recs):
+            if gd.kind in ('horizontal', 'vertical'):
+                npc_slot[i] = len(npcs)
+                npcs.append(self.npc(gd, room))
+            elif gd.kind == 'switch':
+                switches[i] = self.switch(gd, room, add, data)
+            elif gd.kind not in ('trigger', 'opening-wall'):
+                self.note(idx, 'guardian %s not imported' % gd.kind)
+        if len(npcs) > 8:
+            raise SystemExit('%s: %d guardians' % (room.name, len(npcs)))
+
+        base = room.guard_addr
+        for i, gd in enumerate(recs):
+            if gd.kind not in ('trigger', 'opening-wall'):
+                continue
+            flag = gd.b[1] | gd.b[2] << 8
+            # The flag is the state byte (+4) of a switch record, counted from the
+            # room's guardian table; Clock Tower's points into a stale copy at 8000.
+            table = base if base <= flag < base + 8 * len(recs) else 0x8000
+            rec = (flag - table) // 8
+            if (flag - table) % 8 != 4 or rec not in switches:
+                raise SystemExit('%s: record %d flag %04x is not a switch' % (room.name, i, flag))
+            sw = switches[rec]
+            if gd.kind == 'opening-wall':
+                x, y0, lines = gd.b[6] & 31, gd.b[7] // 2, gd.b[3]
+                for y in range(y0 // 8, (y0 + lines + 7) // 8):
+                    sw['open'].append(y * 32 + x)
+            else:
+                target = i + 1
+                if target not in npc_slot:
+                    raise SystemExit('%s: trigger %d has no guardian after it' % (room.name, i))
+                sw['npc'] = self.trigger(gd, recs[target], npc_slot[target], room)
+
+        if len(slots) > 16:
+            raise SystemExit('%s: %d tile slots' % (room.name, len(slots)))
+        tile_bits = [s[2] for s in slots]
+
+        level = {'name': room.name, 'data': data,
+                 'info': [{'colour': s[1], 'type': s[0]} for s in slots],
+                 'air': (room.air[0] - 36) * 8 + -(-room.air[1] // 32),
+                 'border': ZX_NORMAL[room.border]}
+        if switches:
+            level['switches'] = list(switches.values())
+        if room.flags & 8:
+            level['safe_fall'] = 1
+
+        p = room.portal
+        portal = {'x': p['x'], 'y': p['y'],
+                  'gfx': list(self.portal_rows(room)),
+                  'colour': [port_ink(p['attr']), port_paper(p['attr'])]}
+        miner = {'x': start[0], 'y': start[1], 'frame': 0, 'dir': start[2], 'ink': 7}
+        return level, npcs + [None] * (8 - len(npcs)), miner, portal, tile_bits
+
+    def portal_rows(self, room):
+        d = self.game.mem(room.portal['gfx'], 32, room.raw)
+        return [d[2 * r] << 8 | d[2 * r + 1] for r in range(16)]
+
+    def page(self, gd, room):
+        return self.game.mem(gd.page << 8, 256, room.raw)
+
+    def npc(self, gd, room):
+        b = gd.b
+        ink = port_ink(b[1] | (0x40 if b[1] & 8 else 0))
+        gfx = self.sprite(self.page(gd, room), '%s %d' % (room.name, gd.page))
+        nframes = 7 if b[1] >> 5 == 7 else 3
+        n = {'x': gd.x, 'y': gd.y // 8, 'gfx': gfx, 'ink': ink, 'nframes': nframes,
+             'frame': gd.frame & nframes, 'solar_powered_generator': 0}
+        if gd.y % 8:
+            self.note(self.idx, 'guardian at y=%d rounded to row %d' % (gd.y, gd.y // 8))
+        if gd.kind == 'horizontal':
+            lo, hi = b[6] & 31, b[7] & 31
+            move = MOVE_RIGHT if b[0] & 0x80 else MOVE_LEFT
+            if gd.x <= lo:
+                move = MOVE_RIGHT
+            elif gd.x >= hi:
+                move = MOVE_LEFT
+            if b[7] & 0x80:
+                self.note(self.idx, 'double-speed guardian runs at normal speed')
+            n.update(min=lo * 8, max=hi * 8, move=move, speed=1 if b[7] & 0x20 else 0)
+        else:
+            dy = b[4] - 256 if b[4] & 0x80 else b[4]
+            n.update(min=b[6] // 2, max=b[7] // 2, move=MOVE_UP if dy < 0 else MOVE_DOWN,
+                     speed=abs(dy) // 2)
+        return n
+
+    def switch(self, gd, room, add, data):
+        """A JSW64 switch is an 8x16 lever in one half of a 16x16 frame. The port's
+        switch is one tile: the lever goes on its top cell, doubled in width only."""
+        page = self.page(gd, room)
+
+        def lever(frame):
+            rows = [page[frame * 32 + 2 * r] << 8 | page[frame * 32 + 2 * r + 1] for r in range(16)]
+            right = not any(r & 0xFF00 for r in rows)
+            half = [(r & 0xFF) if right else (r >> 8) for r in rows]
+            return right, [[(h >> (7 - c // 2)) & 1 for c in range(16)] for h in half]
+
+        right, off = lever(gd.frame)
+        _, on = lever(gd.frame ^ 1)
+        x, y = gd.x + right, gd.y // 8
+        cell = y * 32 + x
+        under = room.map[cell]
+        colour = port_paper(under) << 4 | port_ink(gd.b[1] | (0x40 if gd.b[1] & 8 else 0))
+        key = (gd.page, gd.frame, colour, room.n if gd.page < 0x84 else -1)
+        k = add(('switch',) + key, T_SWITCHOFF, colour, off)
+        add(('switch-on',) + key, T_SPACE, colour, on)
+        data[cell] = k
+        return {'cell': cell, 'open': []}
+
+    def trigger(self, gd, target, slot, room):
+        """A trigger rewrites the next guardian's byte 0 and bytes 4-7."""
+        b = gd.b
+        kind = b[3] & 15
+        if kind == 0:
+            return {'slot': slot, 'active': 0}
+        nb = bytes([b[3]]) + target.b[1:4] + b[4:8]
+        page = self.game.mem(b[5] << 8, 256, room.raw)
+        gfx = self.sprite(page, '%s %d' % (room.name, b[5]))
+        if kind == 1:
+            lo, hi = nb[6] & 31, nb[7] & 31
+            return {'slot': slot, 'move': MOVE_RIGHT if nb[0] & 0x80 else MOVE_LEFT,
+                    'min': lo * 8, 'max': hi * 8, 'speed': 1 if nb[7] & 0x20 else 0, 'gfx': gfx}
+        dy = nb[4] - 256 if nb[4] & 0x80 else nb[4]
+        return {'slot': slot, 'move': MOVE_UP if dy < 0 else MOVE_DOWN,
+                'min': nb[6] // 2, 'max': nb[7] // 2, 'speed': abs(dy) // 2, 'gfx': gfx}
+
+
+def do_import(tap, repo):
+    from PIL import Image
+    import json
+    import subprocess
+
+    game = Game(tap)
+    rooms = [r for r in game.rooms() if r.name != 'Template Room']
+    by_n = {r.n: r for r in rooms}
+    imp = Importer(game)
+    levels, npcs, miners, portals, tiles = [], [], [], [], []
+    for i, room in enumerate(rooms):
+        imp.idx = BASE_LEVELS + i + 1
+        if i == 0:
+            start = FIRST_START
+        else:
+            prev = rooms[i - 1]
+            if prev.portal['dest'] != room.n:
+                raise SystemExit('%s portal does not lead to %s' % (prev.name, room.name))
+            sx, sy = prev.dest_willy
+            start = (sx, sy // 8, 0)
+        out = imp.level(room, imp.idx, start)
+        for lst, v in zip((levels, npcs, miners, portals, tiles), out):
+            lst.append(v)
+
+    path = os.path.join(repo, 'levels.json')
+    with open(path) as f:
+        js = json.load(f)
+    js['levels'] = js['levels'][:BASE_LEVELS] + levels
+    js['npcs'] = js['npcs'][:BASE_LEVELS] + npcs
+    js['miner'] = js['miner'][:BASE_LEVELS] + miners
+    js['portal'] = js['portal'][:BASE_LEVELS] + portals
+    js['sprites'] = js['sprites'][:BASE_SPRITES] + imp.sprites
+    js['sprite_names'] = js['sprite_names'][:BASE_SPRITES] + imp.sprite_names
+    with open(path, 'w') as f:
+        json.dump(js, f)
+    subprocess.run([sys.executable, '-I', os.path.join(repo, 'tools', 'fmt_levels.py')],
+                   cwd=repo, check=True)
+
+    sheets = os.path.join(repo, 'gfx', 'sprites')
+    n = BASE_LEVELS + len(levels)
+
+    old = Image.open(os.path.join(sheets, 'tiles.png')).convert('RGBA')
+    img = Image.new('RGBA', (256, n * 16), (0, 0, 0, 0))
+    img.paste(old.crop((0, 0, 256, BASE_LEVELS * 16)), (0, 0))
+    for i, slots in enumerate(tiles):
+        for s, bits in enumerate(slots):
+            paste_bits(img, bits, s * 16, (BASE_LEVELS + i) * 16)
+    img.save(os.path.join(sheets, 'tiles.png'), optimize=True)
+
+    old = Image.open(os.path.join(sheets, 'npcs.png')).convert('RGBA')
+    img = Image.new('RGBA', (256, (BASE_SPRITES + len(imp.sprites)) * 32), (0, 0, 0, 0))
+    img.paste(old.crop((0, 0, 256, BASE_SPRITES * 32)), (0, 0))
+    for i, frames in enumerate(imp.sprites):
+        for f, rows in enumerate(frames):
+            paste_bits(img, scale2x(bytes_to_bits(rows, 16)), f * 32, (BASE_SPRITES + i) * 32)
+    img.save(os.path.join(sheets, 'npcs.png'), optimize=True)
+
+    # portals.png: one row per level, then the swordfish (kept from the old last row).
+    old = Image.open(os.path.join(sheets, 'portals.png')).convert('RGBA')
+    swordfish = old.crop((0, old.height - 32, 32, old.height))
+    img = Image.new('RGBA', (32, (n + 1) * 32), (0, 0, 0, 0))
+    img.paste(old.crop((0, 0, 32, BASE_LEVELS * 32)), (0, 0))
+    for i, p in enumerate(portals):
+        paste_bits(img, scale2x(bytes_to_bits(p['gfx'], 16)), 0, (BASE_LEVELS + i) * 32)
+    img.paste(swordfish, (0, n * 32))
+    img.save(os.path.join(sheets, 'portals.png'), optimize=True)
+
+    print('%d levels, %d sprites imported' % (len(levels), len(imp.sprites)))
+    for line in imp.notes:
+        print('  ' + line)
+
+
 def main(argv):
     if len(argv) == 4 and argv[1] == 'survey':
         survey(argv[2], argv[3])
     elif len(argv) == 4 and argv[1] == 'dump':
         dump(argv[2], int(argv[3]))
+    elif len(argv) == 4 and argv[1] == 'import':
+        do_import(argv[2], argv[3])
     else:
         sys.exit(__doc__)
 

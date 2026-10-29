@@ -15,6 +15,8 @@ typedef struct {
     char    *name;
     int     data[512];
     INFO    info[MAX_SLOTS];
+    int     nswitches;
+    SWITCH  switches[MAX_SWITCHES];
 } LEVEL;
 
 static LEVEL    level_data[MAX_LEVELS];
@@ -127,12 +129,55 @@ static void do_wall_tick() {
     do_wall = do_nothing;
 }
 
+// Opens a levels.json switch's cells and applies its NPC change. With restore set, the
+// NPC's move and active state came back with the save state, so only its limits are set.
+static void apply_switch(const SWITCH *s, int restore) {
+    int i;
+
+    for (i = 0; i < s->nopen; i++) {
+        level_tile_delete(s->open[i]);
+    }
+    if (s->npc_slot < 0) {
+        return;
+    }
+    if (s->npc_active) {
+        npcs_set_limits(s->npc_slot, s->npc_min, s->npc_max, s->npc_speed, s->npc_gfx);
+    }
+    if (!restore) {
+        npcs_set_move(s->npc_slot, s->npc_active, s->npc_move);
+    }
+}
+
+// After a save state is restored, redoes what the level's flipped switches changed.
+void level_restore_switches(void) {
+    LEVEL *level = &level_data[game_level];
+    int   i;
+
+    for (i = 0; i < level->nswitches; i++) {
+        if (level_tile[level->switches[i].cell].type == T_SWITCHON) {
+            apply_switch(&level->switches[i], 1);
+        }
+    }
+}
+
 void level_switch(int tile) {
+    LEVEL *level = &level_data[game_level];
+    int   i;
+
     level_tile[tile].type = T_SWITCHON;
     level_tile[tile].ink = 0x4;
     level_tile[tile].slot++;
     level_mark_tile_dirty(tile);
 
+    for (i = 0; i < level->nswitches; i++) {
+        if (level->switches[i].cell == tile) {
+            apply_switch(&level->switches[i], 0);
+        }
+    }
+
+    if (game_level != 7 && game_level != 11) {
+        return;
+    }
     if (tile == 6) {
         level_tile[TILE1].data = 7;
         level_tile[TILE2].data = 1;
@@ -227,6 +272,12 @@ const char *level_get_name(int level) {
 }
 
 static char level_names[MAX_LEVELS][64];
+
+void level_set_switches(int idx, int n, const SWITCH *switches) {
+    if (idx < 0 || idx >= MAX_LEVELS || n < 0 || n > MAX_SWITCHES) return;
+    level_data[idx].nswitches = n;
+    memcpy(level_data[idx].switches, switches, n * sizeof *switches);
+}
 
 void level_set_entry(int idx, const char *name, int data[512], int slots, u8 colours[], int types[]) {
     int i;

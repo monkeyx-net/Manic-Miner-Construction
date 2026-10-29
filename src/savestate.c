@@ -36,6 +36,7 @@ void savestate_apply_pending_restore(void) {
     level_set_save_data(&pending_ld);
     miner_set_save_data(&pending_md);
     npcs_set_save_data(pending_rd);
+    level_restore_switches();
     portal_set_save_data(&pending_pd);
 
     game_air        = pending_air;

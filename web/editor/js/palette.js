@@ -24,6 +24,9 @@ export const TILE_TYPES = [
   { value: 10, name: 'Void' },
   { value: 1,  name: 'Switch Off' },
   { value: 2,  name: 'Switch On' },
+  { value: 11, name: 'Trampoline' },
+  { value: 12, name: 'Ramp \\' },
+  { value: 13, name: 'Ramp /' },
 ];
 
 export const TYPE_BADGE = {
@@ -38,4 +41,7 @@ export const TYPE_BADGE = {
   8:  { label: '→',     bg: '#660066' },
   9:  { label: 'HARM',  bg: '#880000' },
   10: { label: 'VOID',  bg: '#220022' },
+  11: { label: 'TRAMP', bg: '#008855' },
+  12: { label: '\\',     bg: '#665500' },
+  13: { label: '/',     bg: '#665500' },
 };

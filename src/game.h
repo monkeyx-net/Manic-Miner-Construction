@@ -107,7 +107,10 @@ enum {
     T_CONVEYL,
     T_CONVEYR,
     T_HARM,
-    T_VOID
+    T_VOID,
+    T_TRAMP,
+    T_RAMPL,    // ramp rising to the left: "\"
+    T_RAMPR     // ramp rising to the right: "/"
 };
 
 enum {
@@ -122,6 +125,22 @@ void game_set_level_hi_score(int level, int score);
 
 const char *level_get_name(int level);
 void level_set_entry(int idx, const char *name, int data[512], int slots, u8 colours[], int types[]);
+
+#define MAX_SWITCHES     8
+#define MAX_SWITCH_OPEN  16
+
+// A switch from levels.json: when the miner flips it, the open cells are cleared and,
+// if npc_slot >= 0, that NPC changes how it moves (or vanishes when npc_active is 0).
+typedef struct {
+    int cell;
+    int nopen;
+    int open[MAX_SWITCH_OPEN];
+    int npc_slot;
+    int npc_active, npc_move, npc_min, npc_max, npc_speed, npc_gfx;
+} SWITCH;
+
+void level_set_switches(int idx, int n, const SWITCH *switches);
+void level_restore_switches(void);
 void level_init(void);
 void level_ticker(void);
 int  level_conveyor_phase(void);
@@ -207,6 +226,8 @@ void npcs_ticker(void);
 void npcs_eugene(void);
 void npcs_barrel(void);
 void npcs_kong(void);
+void npcs_set_move(int slot, int active, int move_id);
+void npcs_set_limits(int slot, int min, int max, int speed, int gfx);
 
 enum {
     MOVE_NONE,
