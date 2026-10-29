@@ -484,12 +484,16 @@ int main(int argc, char *argv[]) {
     if (is_fullscreen) {
         win_w = mode.w;
         win_h = mode.h;
-        sdlWindow = SDL_CreateWindow("Manic Miner", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP);
+        sdlWindow = SDL_CreateWindow("Manic Miner", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 0, 0,
+                                     SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_RESIZABLE);
     } else {
         win_w = WIDTH * window_scale;
         win_h = HEIGHT * window_scale;
-        sdlWindow = SDL_CreateWindow("Manic Miner", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, win_w, win_h, 0);
+        sdlWindow = SDL_CreateWindow("Manic Miner", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, win_w, win_h,
+                                     SDL_WINDOW_RESIZABLE);
     }
+    // The picture is scaled by whole multiples, so it needs at least 1x.
+    SDL_SetWindowMinimumSize(sdlWindow, WIDTH, HEIGHT);
 #endif
 
     sdl_renderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
