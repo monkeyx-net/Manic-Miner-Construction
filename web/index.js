@@ -10,7 +10,7 @@
     return vers.join('');
   }
   // 300000 -> "30.0.0"
-  var packedVersionToHumanReadable = n => [n / 10000 | 0, (n / 100 | 0) % 100, n % 100].join('.');
+  var packedVersionToHumanReadable = n => [n / 10_000 | 0, (n / 100 | 0) % 100, n % 100].join('.');
 
   var TARGET_NOT_SUPPORTED = 2147483647;
 
@@ -76,7 +76,7 @@ var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIR
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmpn8d7ps2p.js
+// include: /tmp/tmpqumoz_2n.js
 
   if (!Module['expectedDataFileDownloads']) Module['expectedDataFileDownloads'] = 0;
   Module['expectedDataFileDownloads']++;
@@ -167,10 +167,6 @@ var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIR
 Module['FS_createPath']("/", "gfx", true, true);
 Module['FS_createPath']("/gfx", "fonts", true, true);
 Module['FS_createPath']("/gfx", "sprites", true, true);
-Module['FS_createPath']("/gfx/sprites", "MANIC", true, true);
-Module['FS_createPath']("/gfx/sprites/MANIC", "data", true, true);
-Module['FS_createPath']("/gfx/sprites/MANIC/data", "GFX", true, true);
-Module['FS_createPath']("/gfx/sprites/MANIC/data", "SFX", true, true);
 Module['FS_createPath']("/", "sfx", true, true);
 Module['FS_createPath']("/sfx", "music", true, true);
 Module['FS_createPath']("/sfx", "sounds", true, true);
@@ -209,25 +205,25 @@ Module['FS_createPath']("/sfx", "sounds", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/gfx/fonts/MANIC MINER - Glyphr Studio Project - 2026.5.26-14.09.37.gs2", "start": 0, "end": 640498}, {"filename": "/gfx/fonts/MANIC MINER - Glyphr Studio Project - 2026.5.26-16.11.46.gs2", "start": 640498, "end": 1278864}, {"filename": "/gfx/fonts/MANIC MINER - SVG Font - 2026.5.26-14.09.55.svg", "start": 1278864, "end": 1424666}, {"filename": "/gfx/fonts/MANIC MINER - SVG Font - 2026.5.26-16.12.00.svg", "start": 1424666, "end": 1571414}, {"filename": "/gfx/fonts/MANICMINER-Regular.otf", "start": 1571414, "end": 1609446}, {"filename": "/gfx/fonts/PressStart2P_400Regular.ttf", "start": 1609446, "end": 1725454}, {"filename": "/gfx/fonts/pixeldroidConsoleRegular.otf", "start": 1725454, "end": 1747046}, {"filename": "/gfx/fonts/pixeldroidConsoleRegularMono.otf", "start": 1747046, "end": 1768674}, {"filename": "/gfx/sprites/16x16.png", "start": 1768674, "end": 1836481}, {"filename": "/gfx/sprites/16x16.xcf", "start": 1836481, "end": 2078724}, {"filename": "/gfx/sprites/MANIC/data/GFX/16x16.bmp", "start": 2078724, "end": 2207802}, {"filename": "/gfx/sprites/MANIC/data/GFX/background.bmp", "start": 2207802, "end": 2225264}, {"filename": "/gfx/sprites/MANIC/data/GFX/bgfill1.bmp", "start": 2225264, "end": 2226726}, {"filename": "/gfx/sprites/MANIC/data/GFX/bgfill2.bmp", "start": 2226726, "end": 2229532}, {"filename": "/gfx/sprites/MANIC/data/GFX/blocks.bmp", "start": 2229532, "end": 2251090}, {"filename": "/gfx/sprites/MANIC/data/GFX/end.bmp", "start": 2251090, "end": 2253192}, {"filename": "/gfx/sprites/MANIC/data/GFX/font.bmp", "start": 2253192, "end": 2303422}, {"filename": "/gfx/sprites/MANIC/data/GFX/fonts.bmp", "start": 2303422, "end": 2316788}, {"filename": "/gfx/sprites/MANIC/data/GFX/logo.bmp", "start": 2316788, "end": 2449322}, {"filename": "/gfx/sprites/MANIC/data/GFX/piano.bmp", "start": 2449322, "end": 2466784}, {"filename": "/gfx/sprites/MANIC/data/GFX/sun.bmp", "start": 2466784, "end": 2468246}, {"filename": "/gfx/sprites/MANIC/data/GFX/switches.bmp", "start": 2468246, "end": 2469452}, {"filename": "/gfx/sprites/MANIC/data/GFX/titleair.bmp", "start": 2469452, "end": 2474626}, {"filename": "/gfx/sprites/MANIC/data/SFX/DIE.WAV", "start": 2474626, "end": 2477009}, {"filename": "/gfx/sprites/MANIC/data/SFX/DONE.XM", "start": 2477009, "end": 2508670}, {"filename": "/gfx/sprites/MANIC/data/SFX/FINAL.XM", "start": 2508670, "end": 2531588}, {"filename": "/gfx/sprites/MANIC/data/SFX/INGAME.XM", "start": 2531588, "end": 2553780}, {"filename": "/gfx/sprites/MANIC/data/SFX/JUMP.WAV", "start": 2553780, "end": 2554901}, {"filename": "/gfx/sprites/MANIC/data/SFX/OPTIONS.XM", "start": 2554901, "end": 2574557}, {"filename": "/gfx/sprites/MANIC/data/SFX/PICK.WAV", "start": 2574557, "end": 2577347}, {"filename": "/gfx/sprites/MANIC/data/SFX/TITLE.XM", "start": 2577347, "end": 2598882}, {"filename": "/gfx/sprites/MANIC/data/hiscore.dat", "start": 2598882, "end": 2598894}, {"filename": "/gfx/sprites/ManicSpriteSheet_32x32.png", "start": 2598894, "end": 3568588}, {"filename": "/gfx/sprites/ManicSpriteSheet_32x32.xcf", "start": 3568588, "end": 5516162}, {"filename": "/gfx/sprites/boot.png", "start": 5516162, "end": 5517656}, {"filename": "/gfx/sprites/boot.xcf", "start": 5517656, "end": 5522025}, {"filename": "/gfx/sprites/miner.png", "start": 5522025, "end": 5525535}, {"filename": "/gfx/sprites/miner_layers.xcf", "start": 5525535, "end": 5561662}, {"filename": "/gfx/sprites/npcs.png", "start": 5561662, "end": 5621024}, {"filename": "/gfx/sprites/npcs_large.png", "start": 5621024, "end": 5688230}, {"filename": "/gfx/sprites/npcs_original.png", "start": 5688230, "end": 5693437}, {"filename": "/gfx/sprites/piano_keys.png", "start": 5693437, "end": 5693538}, {"filename": "/gfx/sprites/portals.png", "start": 5693538, "end": 5701677}, {"filename": "/gfx/sprites/portals.xcf", "start": 5701677, "end": 5729736}, {"filename": "/gfx/sprites/tiles.png", "start": 5729736, "end": 5732461}, {"filename": "/gfx/sprites/title.png", "start": 5732461, "end": 5734479}, {"filename": "/sfx/music/game.ogg", "start": 5734479, "end": 6318711}, {"filename": "/sfx/music/in-game-tune.ogg", "start": 6318711, "end": 6386490}, {"filename": "/sfx/music/title.ogg", "start": 6386490, "end": 6795423}, {"filename": "/sfx/music/tune.ogg", "start": 6795423, "end": 6958680}, {"filename": "/sfx/sounds/air.ogg", "start": 6958680, "end": 7000218}, {"filename": "/sfx/sounds/air2.ogg", "start": 7000218, "end": 7029118}, {"filename": "/sfx/sounds/die.ogg", "start": 7029118, "end": 7035867}, {"filename": "/sfx/sounds/escape.ogg", "start": 7035867, "end": 7095086}, {"filename": "/sfx/sounds/fall.ogg", "start": 7095086, "end": 7102102}, {"filename": "/sfx/sounds/gameover.ogg", "start": 7102102, "end": 7126918}, {"filename": "/sfx/sounds/jump.ogg", "start": 7126918, "end": 7140775}, {"filename": "/sfx/sounds/kong.ogg", "start": 7140775, "end": 7165698}, {"filename": "/sfx/sounds/victory.ogg", "start": 7165698, "end": 7177607}], "remote_package_size": 7177607});
+    loadPackage({"files": [{"filename": "/gfx/fonts/MANICMINER-Regular.otf", "start": 0, "end": 38032}, {"filename": "/gfx/fonts/PressStart2P_400Regular.ttf", "start": 38032, "end": 154040}, {"filename": "/gfx/fonts/pixeldroidConsoleRegular.otf", "start": 154040, "end": 175632}, {"filename": "/gfx/sprites/16x16.png", "start": 175632, "end": 243439}, {"filename": "/gfx/sprites/boot.png", "start": 243439, "end": 244933}, {"filename": "/gfx/sprites/miner.png", "start": 244933, "end": 248443}, {"filename": "/gfx/sprites/npcs.png", "start": 248443, "end": 307805}, {"filename": "/gfx/sprites/piano_keys.png", "start": 307805, "end": 307906}, {"filename": "/gfx/sprites/portals.png", "start": 307906, "end": 316045}, {"filename": "/gfx/sprites/tiles.png", "start": 316045, "end": 318770}, {"filename": "/gfx/sprites/title.png", "start": 318770, "end": 320788}, {"filename": "/sfx/music/game.ogg", "start": 320788, "end": 905020}, {"filename": "/sfx/music/title.ogg", "start": 905020, "end": 1313953}, {"filename": "/sfx/sounds/air.ogg", "start": 1313953, "end": 1355491}, {"filename": "/sfx/sounds/die.ogg", "start": 1355491, "end": 1362240}, {"filename": "/sfx/sounds/fall.ogg", "start": 1362240, "end": 1369256}, {"filename": "/sfx/sounds/gameover.ogg", "start": 1369256, "end": 1394072}, {"filename": "/sfx/sounds/jump.ogg", "start": 1394072, "end": 1407929}, {"filename": "/sfx/sounds/kong.ogg", "start": 1407929, "end": 1432852}, {"filename": "/sfx/sounds/victory.ogg", "start": 1432852, "end": 1444761}], "remote_package_size": 1444761});
 
   })();
 
-// end include: /tmp/tmpn8d7ps2p.js
-// include: /tmp/tmpywjo0ge5.js
+// end include: /tmp/tmpqumoz_2n.js
+// include: /tmp/tmpwlwcakuu.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if ((typeof ENVIRONMENT_IS_WASM_WORKER != 'undefined' && ENVIRONMENT_IS_WASM_WORKER) || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD) || (typeof ENVIRONMENT_IS_AUDIO_WORKLET != 'undefined' && ENVIRONMENT_IS_AUDIO_WORKLET)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /tmp/tmpywjo0ge5.js
-// include: /tmp/tmpsm_zjsqd.js
+  // end include: /tmp/tmpwlwcakuu.js
+// include: /tmp/tmp4zwbrg5r.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /tmp/tmpsm_zjsqd.js
+  // end include: /tmp/tmp4zwbrg5r.js
 
 
 var programArgs = [];
@@ -1244,17 +1240,8 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
           var buf = Buffer.alloc(BUFSIZE);
           var bytesRead = 0;
   
-          // For some reason we must suppress a closure warning here, even though
-          // fd definitely exists on process.stdin, and is even the proper way to
-          // get the fd of stdin,
-          // https://github.com/nodejs/help/issues/2136#issuecomment-523649904
-          // This started to happen after moving this logic out of library_tty.js,
-          // so it is related to the surrounding code in some unclear manner.
-          /** @suppress {missingProperties} */
-          var fd = process.stdin.fd;
-  
           try {
-            bytesRead = fs.readSync(fd, buf, 0, BUFSIZE);
+            bytesRead = fs.readSync(process.stdin.fd, buf, 0, BUFSIZE);
           } catch(e) {
             // Cross-platform differences: on Windows, reading EOF throws an
             // exception, but on other OSes, reading EOF returns 0. Uniformize
@@ -1264,7 +1251,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
           }
   
           if (bytesRead > 0) {
-            result = buf.slice(0, bytesRead).toString('utf-8');
+            result = buf.toString('utf-8', 0, bytesRead);
           }
         } else
         if (globalThis.window?.prompt) {
@@ -1448,7 +1435,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
   mount(mount) {
         return MEMFS.createNode(null, '/', 16895, 0);
       },
-  createNode(parent, name, mode, dev) {
+  createNode(parent, name, mode, dev = undefined) {
         if (FS.isBlkdev(mode) || FS.isFIFO(mode)) {
           // not supported
           throw new FS.ErrnoError(63);
@@ -1579,6 +1566,11 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
           attr.atime = new Date(node.atime);
           attr.mtime = new Date(node.mtime);
           attr.ctime = new Date(node.ctime);
+          // A Date only holds whole milliseconds: also return the exact times
+          // (e.g. as set by utimensat), which SYSCALLS.writeStat prefers.
+          attr.atimeMs = node.atime;
+          attr.mtimeMs = node.mtime;
+          attr.ctimeMs = node.ctime;
           // NOTE: In our implementation, st_blocks = Math.ceil(st_size/st_blksize),
           //       but this is not required by the standard.
           attr.blksize = 4096;
@@ -1598,7 +1590,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
   lookup(parent, name) {
           throw new FS.ErrnoError(44);
         },
-  mknod(parent, name, mode, dev) {
+  mknod(parent, name, mode, dev = undefined) {
           return MEMFS.createNode(parent, name, mode, dev);
         },
   rename(old_node, new_dir, new_name) {
@@ -1606,14 +1598,11 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
           try {
             new_node = FS.lookupNode(new_dir, new_name);
           } catch (e) {}
-          if (new_node) {
-            if (FS.isDir(old_node.mode)) {
-              // if we're overwriting a directory at new_name, make sure it's empty.
-              for (var i in new_node.contents) {
-                throw new FS.ErrnoError(55);
-              }
+          if (new_node && FS.isDir(old_node.mode)) {
+            // if we're overwriting a directory at new_name, make sure it's empty.
+            for (var i in new_node.contents) {
+              throw new FS.ErrnoError(55);
             }
-            FS.hashRemoveNode(new_node);
           }
           // do the internal rewiring
           delete old_node.parent.contents[old_node.name];
@@ -1923,6 +1912,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
       'ESTRPIPE': 135,
     };
   
+  
   var asyncLoad = async (url) => {
       var arrayBuffer = await readAsync(url);
       assert(arrayBuffer, `Loading data file "${url}" failed (no arrayBuffer).`);
@@ -2001,7 +1991,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
           if (shown) {
             err('(end of list)');
           }
-        }, 10000);
+        }, 10_000);
         // Prevent this timer from keeping the runtime alive if nothing
         // else is.
         runDependencyWatcher.unref?.()
@@ -2057,7 +2047,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
   },
   streams:[],
   nextInode:1,
-  nameTable:null,
+  nameTable:[],
   currentPath:"/",
   initialized:false,
   ignorePermissions:true,
@@ -2326,7 +2316,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         // if we failed to find it in the cache, call into the VFS
         return FS.lookup(parent, name);
       },
-  createNode(parent, name, mode, rdev) {
+  createNode(parent, name, mode, rdev = undefined) {
         assert(typeof parent == 'object')
         var node = new FS.FSNode(parent, name, mode, rdev);
   
@@ -2701,9 +2691,9 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         var rtn = {
           bsize: 4096,
           frsize: 4096,
-          blocks: 1e6,
-          bfree: 5e5,
-          bavail: 5e5,
+          blocks: 1_000_000,
+          bfree: 500_000,
+          bavail: 500_000,
           files: FS.nextInode,
           ffree: FS.nextInode - 1,
           fsid: 42,
@@ -2726,7 +2716,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         mode |= 16384;
         return FS.mknod(path, mode, 0);
       },
-  mkdirTree(path, mode) {
+  mkdirTree(path, mode = 0o777) {
         var dirs = path.split('/');
         var d = '';
         for (var dir of dirs) {
@@ -2740,7 +2730,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
           }
         }
       },
-  mkdev(path, mode, dev) {
+  mkdev(path, mode, dev = undefined) {
         if (typeof dev == 'undefined') {
           dev = mode;
           mode = 0o666;
@@ -2860,6 +2850,11 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         // do the underlying fs rename
         try {
           old_dir.node_ops.rename(old_node, new_dir, new_name);
+          // The replaced node is stale now. Evict it only after the rename
+          // succeeded: backends like NODEFS report node.id as st_ino.
+          if (new_node) {
+            FS.hashRemoveNode(new_node);
+          }
           // update old node (we do this here to avoid each backend
           // needing to)
           old_node.parent = new_dir;
@@ -2930,7 +2925,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         }
         return link.node_ops.readlink(link);
       },
-  stat(path, dontFollow) {
+  stat(path, dontFollow = false) {
         var lookup = FS.lookupPath(path, { follow: !dontFollow });
         var node = lookup.node;
         var getattr = FS.checkOpExists(node.node_ops.getattr, 63);
@@ -2948,14 +2943,14 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
   lstat(path) {
         return FS.stat(path, true);
       },
-  doChmod(stream, node, mode, dontFollow) {
+  doChmod(stream, node, mode, dontFollow = false) {
         FS.doSetAttr(stream, node, {
           mode: (mode & 4095) | (node.mode & ~4095),
           ctime: Date.now(),
           dontFollow
         });
       },
-  chmod(path, mode, dontFollow) {
+  chmod(path, mode, dontFollow = false) {
         var node;
         if (typeof path == 'string') {
           var lookup = FS.lookupPath(path, { follow: !dontFollow });
@@ -2972,14 +2967,14 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         var stream = FS.getStreamChecked(fd);
         FS.doChmod(stream, stream.node, mode, false);
       },
-  doChown(stream, node, dontFollow) {
+  doChown(stream, node, dontFollow = false) {
         FS.doSetAttr(stream, node, {
           timestamp: Date.now(),
           dontFollow
           // we ignore the uid / gid for now
         });
       },
-  chown(path, uid, gid, dontFollow) {
+  chown(path, uid, gid, dontFollow = false) {
         var node;
         if (typeof path == 'string') {
           var lookup = FS.lookupPath(path, { follow: !dontFollow });
@@ -3032,7 +3027,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         }
         FS.doTruncate(stream, stream.node, len);
       },
-  utime(path, atime, mtime, dontFollow) {
+  utime(path, atime, mtime, dontFollow = false) {
         var lookup = FS.lookupPath(path, { follow: !dontFollow });
         FS.doSetAttr(null, lookup.node, {
           atime: atime,
@@ -3171,7 +3166,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         stream.ungotten = [];
         return stream.position;
       },
-  read(stream, buffer, offset, length, position) {
+  read(stream, buffer, offset, length, position = undefined) {
         assert(offset >= 0);
         if (length < 0 || position < 0) {
           throw new FS.ErrnoError(28);
@@ -3198,7 +3193,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         if (!seeking) stream.position += bytesRead;
         return bytesRead;
       },
-  write(stream, buffer, offset, length, position, canOwn) {
+  write(stream, buffer, offset, length, position = undefined, canOwn = undefined) {
         assert(offset >= 0);
         assert(buffer.subarray, 'FS.write expects a TypedArray');
         if (length < 0 || position < 0) {
@@ -3267,8 +3262,8 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         return stream.stream_ops.ioctl(stream, cmd, arg);
       },
   readFile(path, opts = {}) {
-        opts.flags = opts.flags ?? 0;
-        opts.encoding = opts.encoding ?? 'binary';
+        opts.flags ??= 0;
+        opts.encoding ??= 'binary';
         if (opts.encoding !== 'utf8' && opts.encoding !== 'binary') {
           abort(`Invalid encoding type "${opts.encoding}"`);
         }
@@ -3284,7 +3279,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         return buf;
       },
   writeFile(path, data, opts = {}) {
-        opts.flags = opts.flags ?? 577;
+        opts.flags ??= 577;
         var stream = FS.open(path, opts.flags, opts.mode);
         data = FS_fileDataToTypedArray(data);
         FS.write(stream, data, 0, data.byteLength, undefined, opts.canOwn);
@@ -3413,7 +3408,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         assert(stderr.fd === 2, `invalid handle for stderr (${stderr.fd})`);
       },
   staticInit() {
-        FS.nameTable = new Array(4096);
+        FS.nameTable.length = 4096;
   
         FS.mount(MEMFS, {}, '/');
   
@@ -3425,7 +3420,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
           'MEMFS': MEMFS,
         };
       },
-  init(input, output, error) {
+  init(input = undefined, output = undefined, error = undefined) {
         assert(!FS.initialized, 'FS.init was previously called. If you want to initialize later with custom parameters, remove any earlier calls (note that one is automatically added to the generated code)');
         FS.initialized = true;
   
@@ -3447,14 +3442,8 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
           }
         }
       },
-  findObject(path, dontResolveLastLink) {
-        var ret = FS.analyzePath(path, dontResolveLastLink);
-        if (!ret.exists) {
-          return null;
-        }
-        return ret.object;
-      },
-  analyzePath(path, dontResolveLastLink) {
+  analyzePath(path, dontResolveLastLink = false) {
+        warnOnce('FS.analyzePath is deprecated; use FS.lookupPath or FS.stat instead');
         // operate from within the context of the symlink's target
         try {
           var lookup = FS.lookupPath(path, { follow: !dontResolveLastLink });
@@ -3482,7 +3471,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         };
         return ret;
       },
-  createPath(parent, path, canRead, canWrite) {
+  createPath(parent, path, canRead = undefined, canWrite = undefined) {
         parent = typeof parent == 'string' ? parent : FS.getPath(parent);
         var parts = path.split('/').reverse();
         while (parts.length) {
@@ -3498,12 +3487,12 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         }
         return current;
       },
-  createFile(parent, name, properties, canRead, canWrite) {
+  createFile(parent, name, properties, canRead = undefined, canWrite = undefined) {
         var path = PATH.join2(typeof parent == 'string' ? parent : FS.getPath(parent), name);
         var mode = FS_getMode(canRead, canWrite);
         return FS.create(path, mode);
       },
-  createDataFile(parent, name, data, canRead, canWrite, canOwn) {
+  createDataFile(parent, name, data = undefined, canRead = undefined, canWrite = undefined, canOwn = undefined) {
         var path = name;
         if (parent) {
           parent = typeof parent == 'string' ? parent : FS.getPath(parent);
@@ -3521,7 +3510,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
           FS.chmod(node, mode);
         }
       },
-  createDevice(parent, name, input, output) {
+  createDevice(parent, name, input = undefined, output = undefined) {
         var path = PATH.join2(typeof parent == 'string' ? parent : FS.getPath(parent), name);
         var mode = FS_getMode(!!input, !!output);
         FS.createDevice.major ??= 64;
@@ -3587,7 +3576,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
           }
         }
       },
-  createLazyFile(parent, name, url, canRead, canWrite) {
+  createLazyFile(parent, name, url, canRead = undefined, canWrite = undefined) {
         // Lazy chunked Uint8Array (implements get and length from Uint8Array).
         // Actual getting is abstracted away for eventual reuse.
         class LazyUint8Array {
@@ -3757,7 +3746,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
   var HEAP64;
   var SYSCALLS = {
   currentUmask:18,
-  calculateAt(dirfd, path, allowEmpty) {
+  calculateAt(dirfd, path, allowEmpty = false) {
         if (PATH.isAbs(path)) {
           return path;
         }
@@ -3787,15 +3776,18 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         HEAP64[(((buf)+(24))>>3)] = BigInt(stat.size);
         HEAP32[(((buf)+(32))>>2)] = 4096;
         HEAP32[(((buf)+(36))>>2)] = stat.blocks;
-        var atime = stat.atime.getTime();
-        var mtime = stat.mtime.getTime();
-        var ctime = stat.ctime.getTime();
+        // Prefer `*Ms` properties if available (e.g. from MEMFS, or NODEFS / host
+        // `fs.Stats`) for sub-millisecond precision; fall back to Date#getTime for
+        // other filesystems.
+        var atime = stat.atimeMs ?? stat.atime.getTime();
+        var mtime = stat.mtimeMs ?? stat.mtime.getTime();
+        var ctime = stat.ctimeMs ?? stat.ctime.getTime();
         HEAP64[(((buf)+(40))>>3)] = BigInt(Math.floor(atime / 1000));
-        HEAPU32[(((buf)+(48))>>2)] = (atime % 1000) * 1000 * 1000;
+        HEAPU32[(((buf)+(48))>>2)] = Math.floor((atime % 1000) * 1_000_000);
         HEAP64[(((buf)+(56))>>3)] = BigInt(Math.floor(mtime / 1000));
-        HEAPU32[(((buf)+(64))>>2)] = (mtime % 1000) * 1000 * 1000;
+        HEAPU32[(((buf)+(64))>>2)] = Math.floor((mtime % 1000) * 1_000_000);
         HEAP64[(((buf)+(72))>>3)] = BigInt(Math.floor(ctime / 1000));
-        HEAPU32[(((buf)+(80))>>2)] = (ctime % 1000) * 1000 * 1000;
+        HEAPU32[(((buf)+(80))>>2)] = Math.floor((ctime % 1000) * 1_000_000);
         HEAP64[(((buf)+(88))>>3)] = BigInt(stat.ino);
         return 0;
       },
@@ -4176,12 +4168,19 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         return 52;
       }
       // "now" is in ms, and wasi times are in ns.
-      var nsec = Math.round(now * 1000 * 1000);
+      var nsec = Math.round(now * 1_000_000);
       HEAP64[((ptime)>>3)] = BigInt(nsec);
       return 0;
     ;
   }
 
+  function getFullscreenElement() {
+      return document.fullscreenElement
+             ?? document.webkitFullscreenElement
+             ;
+    }
+  
+  
   var handleException = (e) => {
       // Certain exception types we do not treat as errors since they are used for
       // internal control flow.
@@ -4239,41 +4238,30 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         }
       }
     };
-  var callUserCallback = (func) => {
+  var callUserCallback = (func, ...args) => {
       if (ABORT) {
         err('user callback triggered after runtime exited or application aborted.  Ignoring.');
         return;
       }
       try {
-        return func();
+        return func(...args);
       } catch (e) {
         handleException(e);
       } finally {
         maybeExit();
       }
     };
-  
-  function getFullscreenElement() {
-      return document.fullscreenElement
-             ?? document.webkitFullscreenElement
-             ;
-    }
-  
   /** @param {number=} timeout */
   var safeSetTimeout = (func, timeout) => {
       
-      // Slot 0 is reserved so that, like setTimeout, ids are always non-zero.
-      safeSetTimeout.mapping ||= [0];
-      var id = safeSetTimeout.mapping.length;
-      safeSetTimeout.mapping[id] = setTimeout(() => {
-        safeSetTimeout.mapping[id] = undefined;
+      var id = safeSetTimeout.nextId++;
+      safeSetTimeout.pending.set(id, setTimeout(() => {
+        safeSetTimeout.pending.delete(id);
         
         callUserCallback(func);
-      }, timeout);
+      }, timeout));
       return id;
     };
-  
-  
   
   
   
@@ -4383,7 +4371,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
             // workaround for chrome bug 124926 - we do not always get oncanplaythrough or onerror
             safeSetTimeout(() => {
               finish(audio); // try to use it even though it is not necessarily ready to play
-            }, 10000);
+            }, 10_000);
           });
         };
         preloadPlugins.push(audioPlugin);
@@ -4522,12 +4510,6 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         CFS.apply(document, []);
         return true;
       },
-  safeSetTimeout(func, timeout) {
-        // Legacy function, this is used by the SDL2 port so we need to keep it
-        // around at least until that is updated.
-        // See https://github.com/libsdl-org/SDL/pull/6304
-        return safeSetTimeout(func, timeout);
-      },
   getMimetype(name) {
         return {
           'jpg': 'image/jpeg',
@@ -4538,9 +4520,6 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
           'wav': 'audio/wav',
           'mp3': 'audio/mpeg'
         }[name.slice(name.lastIndexOf('.')+1)];
-      },
-  getUserMedia(func) {
-        return navigator.mediaDevices.getUserMedia(func);
       },
   getMouseWheelDelta(event) {
         var delta = 0;
@@ -4653,13 +4632,11 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         Browser.updateCanvasDimensions(canvas, width, height);
         if (!noUpdates) Browser.updateResizeListeners();
       },
-  windowedWidth:0,
-  windowedHeight:0,
   setFullscreenCanvasSize() {
         // check if SDL is available
         if (typeof SDL != 'undefined') {
           var flags = HEAPU32[((SDL.screen)>>2)];
-          flags = flags | 0x00800000; // set SDL_FULLSCREEN flag
+          flags = flags | 8388608;
           HEAP32[((SDL.screen)>>2)] = flags;
         }
         Browser.updateCanvasDimensions(Browser.getCanvas());
@@ -4669,7 +4646,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         // check if SDL is available
         if (typeof SDL != 'undefined') {
           var flags = HEAPU32[((SDL.screen)>>2)];
-          flags = flags & ~0x00800000; // clear SDL_FULLSCREEN flag
+          flags = flags & ~8388608;
           HEAP32[((SDL.screen)>>2)] = flags;
         }
         Browser.updateCanvasDimensions(Browser.getCanvas());
@@ -4960,7 +4937,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         // version field in above check.
         if (!canvas.getContextSafariWebGL2Fixed) {
           canvas.getContextSafariWebGL2Fixed = canvas.getContext;
-          /** @type {function(this:HTMLCanvasElement, string, (Object|null)=): (Object|null)} */
+          /** @type {function(this:HTMLCanvasElement, string, (Object|null)=): (RenderingContext|null)} */
           function fixedGetContext(ver, attrs) {
             var gl = canvas.getContextSafariWebGL2Fixed(ver, attrs);
             return ((ver == 'webgl') == (gl instanceof WebGLRenderingContext)) ? gl : null;
@@ -5755,9 +5732,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
       } catch (e) {
         if (onerror) {
           
-          callUserCallback(() => {
-            getWasmTableEntry(onerror)(userdata);
-          });
+          callUserCallback(getWasmTableEntry(onerror), userdata);
         }
       }
     };
@@ -6255,6 +6230,8 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
 
   
   
+  
+  
   var getPreloadedImageData = (path, w, h) => {
       path = PATH_FS.resolve(path);
   
@@ -6332,8 +6309,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
   var _emscripten_glBindVertexArray = (vao) => {
       GLctx.bindVertexArray(GL.vaos[vao]);
     };
-  var _glBindVertexArray = _emscripten_glBindVertexArray;
-  var _emscripten_glBindVertexArrayOES = _glBindVertexArray;
+  var _emscripten_glBindVertexArrayOES = _emscripten_glBindVertexArray;
 
   var _emscripten_glBlendColor = (x0, x1, x2, x3) => GLctx.blendColor(x0, x1, x2, x3);
 
@@ -6527,8 +6503,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
         GL.vaos[id] = null;
       }
     };
-  var _glDeleteVertexArrays = _emscripten_glDeleteVertexArrays;
-  var _emscripten_glDeleteVertexArraysOES = _glDeleteVertexArrays;
+  var _emscripten_glDeleteVertexArraysOES = _emscripten_glDeleteVertexArrays;
 
   var _emscripten_glDepthFunc = (x0) => GLctx.depthFunc(x0);
 
@@ -6558,8 +6533,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
   var _emscripten_glDrawArraysInstanced = (mode, first, count, primcount) => {
       GLctx.drawArraysInstanced(mode, first, count, primcount);
     };
-  var _glDrawArraysInstanced = _emscripten_glDrawArraysInstanced;
-  var _emscripten_glDrawArraysInstancedANGLE = _glDrawArraysInstanced;
+  var _emscripten_glDrawArraysInstancedANGLE = _emscripten_glDrawArraysInstanced;
 
   
   var tempFixedLengthArray = [];
@@ -6574,8 +6548,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
   
       GLctx.drawBuffers(bufArray);
     };
-  var _glDrawBuffers = _emscripten_glDrawBuffers;
-  var _emscripten_glDrawBuffersWEBGL = _glDrawBuffers;
+  var _emscripten_glDrawBuffersWEBGL = _emscripten_glDrawBuffers;
 
   
   var _emscripten_glDrawElements = (mode, count, type, indices) => {
@@ -6588,8 +6561,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
   var _emscripten_glDrawElementsInstanced = (mode, count, type, indices, primcount) => {
       GLctx.drawElementsInstanced(mode, count, type, indices, primcount);
     };
-  var _glDrawElementsInstanced = _emscripten_glDrawElementsInstanced;
-  var _emscripten_glDrawElementsInstancedANGLE = _glDrawElementsInstanced;
+  var _emscripten_glDrawElementsInstancedANGLE = _emscripten_glDrawElementsInstanced;
 
   var _emscripten_glEnable = (x0) => GLctx.enable(x0);
 
@@ -6658,8 +6630,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
       GL.genObject(n, arrays, 'createVertexArray', GL.vaos
         );
     };
-  var _glGenVertexArrays = _emscripten_glGenVertexArrays;
-  var _emscripten_glGenVertexArraysOES = _glGenVertexArrays;
+  var _emscripten_glGenVertexArraysOES = _emscripten_glGenVertexArrays;
 
   var _emscripten_glGenerateMipmap = (x0) => GLctx.generateMipmap(x0);
 
@@ -6968,12 +6939,10 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
     };
 
   
-  var _glGetQueryObjecti64vEXT = _emscripten_glGetQueryObjecti64vEXT;
-  var _emscripten_glGetQueryObjectui64vEXT = _glGetQueryObjecti64vEXT;
+  var _emscripten_glGetQueryObjectui64vEXT = _emscripten_glGetQueryObjecti64vEXT;
 
   
-  var _glGetQueryObjectivEXT = _emscripten_glGetQueryObjectivEXT;
-  var _emscripten_glGetQueryObjectuivEXT = _glGetQueryObjectivEXT;
+  var _emscripten_glGetQueryObjectuivEXT = _emscripten_glGetQueryObjectivEXT;
 
   
   var _emscripten_glGetQueryivEXT = (target, pname, params) => {
@@ -7394,8 +7363,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
       if (!vao) return 0;
       return GLctx.isVertexArray(vao);
     };
-  var _glIsVertexArray = _emscripten_glIsVertexArray;
-  var _emscripten_glIsVertexArrayOES = _glIsVertexArray;
+  var _emscripten_glIsVertexArrayOES = _emscripten_glIsVertexArray;
 
   var _emscripten_glLineWidth = (x0) => GLctx.lineWidth(x0);
 
@@ -7915,8 +7883,7 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
   var _emscripten_glVertexAttribDivisor = (index, divisor) => {
       GLctx.vertexAttribDivisor(index, divisor);
     };
-  var _glVertexAttribDivisor = _emscripten_glVertexAttribDivisor;
-  var _emscripten_glVertexAttribDivisorANGLE = _glVertexAttribDivisor;
+  var _emscripten_glVertexAttribDivisorANGLE = _emscripten_glVertexAttribDivisor;
 
   var _emscripten_glVertexAttribPointer = (index, size, type, normalized, stride, ptr) => {
       GLctx.vertexAttribPointer(index, size, type, !!normalized, stride, ptr);
@@ -8935,11 +8902,10 @@ var UTF8Decoder = globalThis.TextDecoder && new TextDecoder();
 
 
 
-  var createContext = Browser.createContext;
-
   FS.createPreloadedFile = FS_createPreloadedFile;
   FS.preloadFile = FS_preloadFile;
   FS.staticInit();;
+safeSetTimeout.pending = new Map(); safeSetTimeout.nextId = 1;;
 
       Module['requestAnimationFrame'] = MainLoop.requestAnimationFrame;
       Module['pauseMainLoop'] = MainLoop.pause;
@@ -9007,7 +8973,6 @@ if (Module['printErr']) err = Module['printErr'];
 // Begin runtime exports
   Module['addRunDependency'] = addRunDependency;
   Module['removeRunDependency'] = removeRunDependency;
-  Module['createContext'] = createContext;
   Module['FS_preloadFile'] = FS_preloadFile;
   Module['FS_unlink'] = FS_unlink;
   Module['FS_createPath'] = FS_createPath;
@@ -9151,7 +9116,6 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'strError',
   'DNS',
   'Protocols',
-  'Sockets',
   'timers',
   'warnOnce',
   'readEmAsmArgsArray',
@@ -9234,14 +9198,12 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'randomFill',
   'safeSetTimeout',
   'emSetImmediate',
-  'emClearImmediate_deps',
   'emClearImmediate',
   'promiseMap',
   'Browser',
   'requestFullscreen',
   'setCanvasSize',
-  'getUserMedia',
-  'getPreloadedImageData__data',
+  'createContext',
   'wget',
   'MONTH_DAYS_REGULAR',
   'MONTH_DAYS_LEAP',
@@ -9357,7 +9319,6 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'FS_staticInit',
   'FS_init',
   'FS_quit',
-  'FS_findObject',
   'FS_analyzePath',
   'FS_createFile',
   'FS_forceLoadFile',
@@ -10335,13 +10296,8 @@ function checkUnflushedContent() {
   try { // it doesn't matter if it fails
     _fflush(0);
     // also flush in the JS FS layer
-    for (var name of ['stdout', 'stderr']) {
-      var info = FS.analyzePath('/dev/' + name);
-      if (!info) return;
-      var stream = info.object;
-      var rdev = stream.rdev;
-      var tty = TTY.ttys[rdev];
-      if (tty?.output?.length) {
+    for (var tty of Object.values(TTY.ttys)) {
+      if (tty.output.length) {
         has = true;
       }
     }
