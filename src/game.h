@@ -15,7 +15,7 @@ typedef struct {
     int       type;
     int       data;
     int       shape;
-    int       slot;     // index into the level's 10 gfx slots, or -1
+    int       slot;     // index into the level's gfx slots, or -1
 } TILE_RENDER;
 
 typedef struct {
@@ -92,7 +92,9 @@ void gameover_get_render_data(GAMEOVER_RENDER *out);
 #define SOLAR_POWERED_GENERATOR 18
 #define TWENTY  19
 
-#define MAX_NPC_SPRITES 29
+#define MAX_NPC_SPRITES 96
+
+#define MAX_SLOTS 16    // tile slots per level (columns in tiles.png)
 
 enum {
     T_ITEM,
@@ -119,7 +121,7 @@ void game_update_level_hi_score(int level, int score);
 void game_set_level_hi_score(int level, int score);
 
 const char *level_get_name(int level);
-void level_set_entry(int idx, const char *name, int data[512], u8 colours[10], int types[10]);
+void level_set_entry(int idx, const char *name, int data[512], int slots, u8 colours[], int types[]);
 void level_init(void);
 void level_ticker(void);
 int  level_conveyor_phase(void);

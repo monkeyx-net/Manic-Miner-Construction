@@ -56,7 +56,7 @@ void game_config_save(void) {
     if (!f) return;
     fprintf(f, "lives=%d\nlevel=%d\nshowfps=%d\n", game_config_lives, game_config_level, game_config_show_fps);
     fprintf(f, "levelhs=");
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < num_levels; i++) {
         if (i) fputc(',', f);
         fprintf(f, "%d", game_get_level_hi_score(i));
     }
@@ -68,7 +68,7 @@ void game_config_save(void) {
 void game_config_load(void) {
     FILE *f = fopen(CONFIG_FILE, "r");
     if (!f) return;
-    char line[512];
+    char line[1024];
     while (fgets(line, sizeof(line), f)) {
         char *k = strtok(line, "=\n");
         char *v = strtok(NULL, "\n");
@@ -80,7 +80,7 @@ void game_config_load(void) {
             char *tmp = strdup(v);
             char *tok = strtok(tmp, ",");
             int i = 0;
-            while (tok && i < 20) {
+            while (tok && i < num_levels) {
                 game_set_level_hi_score(i++, atoi(tok));
                 tok = strtok(NULL, ",");
             }

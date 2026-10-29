@@ -75,9 +75,9 @@ static int get_bitmap(JSON *arr, u16 bitmap[16], const char *where) {
 static int load_level(JSON *entry, int i) {
     char    where[48], what[96];
     int     data[512];
-    u8      colours[10];
-    int     types[10];
-    int     j, value;
+    u8      colours[MAX_SLOTS];
+    int     types[MAX_SLOTS];
+    int     j, slots, value;
     JSON    *name, *sub;
 
     snprintf(where, sizeof where, "levels[%d]", i);
@@ -87,20 +87,23 @@ static int load_level(JSON *entry, int i) {
         return fail("%s.name is missing", where);
     }
 
-    snprintf(what, sizeof what, "%s.data", where);
-    if (!get_ints(json_get(entry, "data"), 512, 0, 9, data, what)) return 0;
-
     sub = json_get(entry, "info");
-    snprintf(what, sizeof what, "%s.info", where);
-    if (!check_array(sub, 10, what)) return 0;
-    for (j = 0; j < 10; j++) {
+    slots = json_length(sub);
+    if (!json_is_array(sub) || slots < 1 || slots > MAX_SLOTS) {
+        return fail("%s.info must be a list of 1 to %d entries", where, MAX_SLOTS);
+    }
+
+    snprintf(what, sizeof what, "%s.data", where);
+    if (!get_ints(json_get(entry, "data"), 512, 0, slots - 1, data, what)) return 0;
+
+    for (j = 0; j < slots; j++) {
         snprintf(what, sizeof what, "%s.info[%d]", where, j);
         if (!get_field(json_index(sub, j), "colour", 0, 255, &value, what)) return 0;
         colours[j] = (u8)value;
         if (!get_field(json_index(sub, j), "type", T_ITEM, T_VOID, &types[j], what)) return 0;
     }
 
-    level_set_entry(i, json_string(name), data, colours, types);
+    level_set_entry(i, json_string(name), data, slots, colours, types);
 
     // The air bar is 224 pixels; more air keeps it full for longer. 0 would kill at once.
     if (!get_field(entry, "air", 1, 65535, &value, where)) return 0;

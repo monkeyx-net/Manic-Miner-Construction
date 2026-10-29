@@ -14,7 +14,7 @@ typedef struct {
 typedef struct {
     char    *name;
     int     data[512];
-    INFO    info[10];
+    INFO    info[MAX_SLOTS];
 } LEVEL;
 
 static LEVEL    level_data[MAX_LEVELS];
@@ -191,7 +191,7 @@ void level_set_save_data(LEVEL_SAVE *d) {
     int i;
     for (i = 0; i < 512; i++) {
         level_tile[i].type = d->tile_type[i];
-        level_tile[i].slot = d->tile_gfx[i] >= 0 && d->tile_gfx[i] < 10 * 8 ? d->tile_gfx[i] / 8 : -1;
+        level_tile[i].slot = d->tile_gfx[i] >= 0 && d->tile_gfx[i] < MAX_SLOTS * 8 ? d->tile_gfx[i] / 8 : -1;
         level_tile[i].data = d->collapse_data[i];
         level_mark_tile_dirty(i);
     }
@@ -228,14 +228,14 @@ const char *level_get_name(int level) {
 
 static char level_names[MAX_LEVELS][64];
 
-void level_set_entry(int idx, const char *name, int data[512], u8 colours[10], int types[10]) {
+void level_set_entry(int idx, const char *name, int data[512], int slots, u8 colours[], int types[]) {
     int i;
     if (idx < 0 || idx >= MAX_LEVELS) return;
     strncpy(level_names[idx], name, 63);
     level_names[idx][63] = '\0';
     level_data[idx].name = level_names[idx];
     memcpy(level_data[idx].data, data, 512 * sizeof(int));
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < slots; i++) {
         level_data[idx].info[i].colour = colours[i];
         level_data[idx].info[i].type   = types[i];
     }

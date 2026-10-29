@@ -86,7 +86,7 @@ static const TICKER_SEG ticker_bugbyte[] = {
     {C_RED,"M"},{C_YELLOW,"A"},{C_GREEN,"N"},{C_LIGHT_BLUE,"I"},{C_MAGENTA,"C "},{C_LIGHT_BLUE,"M"},{C_MAGENTA,"I"},{C_RED,"N"},{C_YELLOW,"E"},{C_GREEN,"R   "},
     {C_WHITE,"(C) Bug-Byte Ltd. 1983   By Matthew Smith                                "},
     {C_WHITE,"Cursor Keys = Left & Right   Space = Jump   Pause/Tab = Pause   Alt = Tune On/Off   O = Options   L = Load/Save   U = Save State   R = Start/Stop Recording             "},
-    {C_WHITE,"Guide Miner Willy through 20 lethal caverns ..."},
+    {C_WHITE,"Guide Miner Willy through 61 lethal caverns ..."},
     {0,NULL}
 };
 static int      text_pos, text_end;
@@ -176,7 +176,38 @@ extern int game_config_level;
 
 static int save_load_sel = 1;
 
-static void do_hi_scores_responder(void) { action = title_action; }
+#define HI_SCORES_PER_PAGE 20
+
+static int hi_scores_page;
+
+// Draws one page of per-level high scores; each key press shows the next page.
+static void draw_hi_scores(void) {
+    int first = hi_scores_page * HI_SCORES_PER_PAGE;
+
+    video_pixel_fill(0, WIDTH * HEIGHT, 0);
+    video_write_f(0, 6 * 8, C_YELLOW, "HIGH SCORES", VIDEO_FONT_LARGE);
+    for (int i = first; i < num_levels && i < first + HI_SCORES_PER_PAGE; i++) {
+        int row   = (10 + (i - first) * 8) * WIDTH;
+        int score = game_get_level_hi_score(i);
+        u8  ink   = (i % 2 == 0) ? C_WHITE : C_LIGHT_BLUE;
+        char buf[68];
+        snprintf(buf, sizeof(buf), "%2d %s", i + 1, level_get_name(i));
+        video_write(row, ink, buf, VIDEO_FONT_SMALL);
+        char sbuf[16];
+        snprintf(sbuf, sizeof(sbuf), "%6d", score);
+        video_write(row + 200, ink, sbuf, VIDEO_FONT_SMALL);
+    }
+    video_write(172 * WIDTH, C_RED, first + HI_SCORES_PER_PAGE < num_levels ?
+                "PRESS ANY KEY FOR MORE" : "PRESS ANY KEY TO RETURN", VIDEO_FONT_SMALL);
+}
+
+static void do_hi_scores_responder(void) {
+    if (++hi_scores_page * HI_SCORES_PER_PAGE < num_levels) {
+        draw_hi_scores();
+    } else {
+        action = title_action;
+    }
+}
 
 static void draw_save_load_slots() {
     video_pixel_fill(32 * WIDTH, 80 * WIDTH, 0);
@@ -371,20 +402,8 @@ static void do_title_responder() {
     } else if (game_input == KEY_L) {
         save_load_menu_action();
     } else if (game_input == KEY_S) {
-        video_pixel_fill(0, WIDTH * HEIGHT, 0);
-        video_write_f(0, 6 * 8, C_YELLOW, "HIGH SCORES", VIDEO_FONT_LARGE);
-        for (int i = 0; i < num_levels; i++) {
-            int row   = (10 + i * 8) * WIDTH;
-            int score = game_get_level_hi_score(i);
-            u8  ink   = (i % 2 == 0) ? C_WHITE : C_LIGHT_BLUE;
-            char buf[68];
-            snprintf(buf, sizeof(buf), "%2d %s", i + 1, level_get_name(i));
-            video_write(row, ink, buf, VIDEO_FONT_SMALL);
-            char sbuf[16];
-            snprintf(sbuf, sizeof(sbuf), "%6d", score);
-            video_write(row + 200, ink, sbuf, VIDEO_FONT_SMALL);
-        }
-        video_write(172 * WIDTH, C_RED, "PRESS ANY KEY TO RETURN", VIDEO_FONT_SMALL);
+        hi_scores_page = 0;
+        draw_hi_scores();
         ticker = do_nothing;
         drawer = do_nothing;
         responder = do_hi_scores_responder;

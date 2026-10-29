@@ -119,7 +119,9 @@ function populateTileTypeSelect() {
 function populateNpcGfxSelect() {
   const sel = $("npc-gfx");
   sel.innerHTML = "";
-  for (let i = 0; i < 29; i++) {
+  $("sprite-type-sel").max = Math.max(0, (state.sprites || []).length - 1);
+  const count = Math.max(1, (state.sprites || []).length);
+  for (let i = 0; i < count; i++) {
     const opt = document.createElement("option");
     opt.value = i;
     opt.textContent = state.sprite_names[i] ? `${i}: ${state.sprite_names[i]}` : `Sprite ${i}`;
@@ -312,7 +314,8 @@ function updateGfxInfo() {
 function renderGfxSlots() {
   const lv = currentLevel();
   gfxSlotsEl.innerHTML = "";
-  for (let i = 0; i < 10; i++) {
+  const slots = lv ? lv.info.length : 10;
+  for (let i = 0; i < slots; i++) {
     const slot = document.createElement("div");
     slot.className =
       "gfx-slot" +
@@ -904,7 +907,7 @@ function refreshSpriteDesigner() {
 
 function setupSpriteDesignerEvents() {
   $("sprite-type-sel").addEventListener("change", (e) => {
-    spriteDesignerType = Math.max(0, Math.min(28, +e.target.value));
+    spriteDesignerType = Math.max(0, Math.min(+e.target.max, +e.target.value));
     refreshSpriteDesigner();
   });
   $("sprite-frame-sel").addEventListener("change", (e) => {
@@ -1096,7 +1099,7 @@ function loadTileMasks(url) {
     state.tileMasks = [];
     for (let lv = 0; lv < Math.floor(img.height / 16); lv++) {
       const masks = [];
-      for (let slot = 0; slot < Math.min(10, Math.floor(img.width / 16)); slot++) {
+      for (let slot = 0; slot < Math.min(16, Math.floor(img.width / 16)); slot++) {
         const m = new Uint8Array(256);
         for (let i = 0; i < 256; i++) {
           const x = slot * 16 + (i % 16), y = lv * 16 + Math.floor(i / 16);

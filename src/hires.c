@@ -144,7 +144,7 @@ void hires_check_sheets(void) {
     check_sheet(HR_NPCS, "npcs.png", 8 * 32, npcs_sprite_count() * 32, "8 frames per levels.json sprite");
     check_sheet(HR_PORTAL, "portals.png", 32, (num_levels + 1) * 32, "a portal per level, then the swordfish");
     check_sheet(HR_BOOT, "boot.png", 2 * 32, 32, "boot and plinth");
-    check_sheet(HR_TILES, "tiles.png", 10 * 16, num_levels * 16, "10 tiles per level");
+    check_sheet(HR_TILES, "tiles.png", MAX_SLOTS * 16, num_levels * 16, "16 tiles per level");
 }
 
 void hires_quit(void) {
