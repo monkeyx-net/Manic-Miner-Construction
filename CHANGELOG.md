@@ -3,6 +3,50 @@
 ---
 ## Changelog
 
+### v0.0.8 (2026-10-29)
+
+#### Levels
+
+- **41 new levels: Deeper and Down** — levels 21–61 are the extra caverns from the Sam Coupé version (*The Deeper Caverns* and *Down, Down, Deeper and Down*), imported from Byron's ZX Spectrum 128K conversion, *Manic Miner: Deeper and Down 128K v1.1*, built with JSWED 2.3.7 (JSW64). Graphics are 2× upscaled (Scale2x) from the Spectrum originals. The campaign is now 61 levels; victory follows level 61, *Up Up and Away*.
+
+#### Game
+
+- **Trampolines** — standing on a trampoline bounces the miner back up, as if jump were pressed.
+- **Ramps** — the miner walks up and down ramp tiles, a whole cell at a time.
+- **Switches that open walls** — a switch can clear wall cells and change how a guardian moves, or remove it (JSW64 switches, opening walls and triggers). Flipped switches are restored with save states.
+- **Safe falls** — levels marked `safe_fall` have no fall-height death (JSW64 "free falls").
+- **Open-edged rooms** — the miner can no longer leave the screen through gaps in a room's outer wall.
+- **Levels with no items** start with the portal open.
+- **High scores for every level** — per-level high scores are saved for all levels, not just the first 20, and the high-score screen shows 20 levels per page.
+- **Title ticker** — now says 61 lethal caverns.
+
+#### Display & Command Line
+
+- **Windowed by default** — the game starts in a window at 3× scale; new `-f`/`--fullscreen` switch starts fullscreen. `--help` also lists the F11 / Alt+Enter toggle.
+- **Resizable window** — the window can be resized (minimum 256×192); the picture stays integer-scaled.
+- **Correct speed on high-refresh monitors** — game speed is now paced from the refresh rate of the monitor the window is on, not always the first monitor, so it no longer runs up to 2.4× too fast on a 120/144 Hz screen.
+
+#### Level Format (`levels.json`)
+
+- `levels[].info` may have 1–16 tile slots (was exactly 10); `gfx/sprites/tiles.png` is 16 slots wide.
+- New tile types: `11` trampoline, `12` ramp rising left (`\`), `13` ramp rising right (`/`).
+- Optional `levels[].switches` (`cell`, `open`, `npc`) and `levels[].safe_fall`.
+- Optional `npcs[][].mirror`: `0` draws a walker's own left-facing frames 4–7 instead of mirroring frames 0–3.
+- Up to 96 NPC sprites (was 29).
+
+#### Level Editor
+
+- The tile-slot palette shows as many slots as the level has; trampoline and ramp tile types added.
+- NPC and sprite-designer pickers follow the number of sprites in `levels.json`.
+
+#### Tools
+
+- **`tools/jsw64_tap.py`** — reads a JSW64 128K `.tap`: `survey` writes a report and room previews, `dump` prints one room, and `import` appends its rooms to `levels.json` and the sprite sheets.
+
+#### Fixes
+
+- The Kong switch code ran on any level with a switch in cell 6 or 18; it now only runs on the two Kong levels.
+
 ### v0.0.7 (2026-09-26)
 
 #### Game

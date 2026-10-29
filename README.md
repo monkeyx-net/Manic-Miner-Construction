@@ -6,6 +6,8 @@ Originally written in 1983 by Matthew Smith. This port has been created to help 
 
 Based on Steve Clark's SDL2 port, [fawtytoo/ManicMiner](https://github.com/fawtytoo/ManicMiner), and distributed under the same zlib licence (see [LICENCE](LICENCE)).
 
+The game has 61 levels: the original 20, then 41 more from the Sam Coupé version's extra caverns (*The Deeper Caverns* and *Down, Down, Deeper and Down*). These come from Byron's ZX Spectrum 128K conversion, *Manic Miner: Deeper and Down 128K v1.1*, made with John Elliott's JSWED (JSW64).
+
 ## Fork History
 
 Hard fork of [fawtytoo/ManicMiner](https://github.com/fawtytoo/ManicMiner) by Steve Clark,
@@ -38,6 +40,7 @@ Where this fork has the same features, they were written separately.
 - Game controller support.
 - Command-line options.
 - Startup check for every asset, listing each missing or invalid file (`assets.c`).
+- 41 Deeper and Down levels (levels 21–61) with trampolines, ramps, and switches that open walls or change guardians.
 
 **Removed**
 - Cheat mode.
@@ -46,7 +49,7 @@ Where this fork has the same features, they were written separately.
 **Tooling**
 - Browser level editor (`web/editor/`) and Emscripten web build (`make web`, `shell.html`).
 - Headless regression simulator (`tests/sim.c`, `make sim`).
-- Python asset tools in `tools/`: `c_to_json.py`, `gen_sprites.py`, `gen_title.py`, `gen_audio.py`, `fmt_levels.py`, `convert_style.py`.
+- Python asset tools in `tools/`: `c_to_json.py`, `gen_sprites.py`, `gen_title.py`, `gen_audio.py`, `fmt_levels.py`, `convert_style.py`, `jsw64_tap.py` (JSW64 `.tap` survey and level import).
 - Code restyled from `CamelCase` (`Video_Write`) to `snake_case` (`video_write`).
 
 ---
@@ -56,15 +59,15 @@ Where this fork has the same features, they were written separately.
 | Property | Value |
 |----------|-------|
 | Language | C (C99), JavaScript (ES modules) |
-| Version | v0.0.6 |
+| Version | v0.0.8 |
 | Renderer | SDL2 — hi-res 512×256 playfield (tiles and sprites, including the death, level-transition and pause screens); integer-scaled 256×192 low-res canvas for the title screen, menus and HUD |
-| Display | Windowed at 3× scale by default; fullscreen-desktop with `-f`; F11 / Alt+Enter toggles |
-| Frame rate | 60 fps tick rate; timer-gated main loop drives action → input → tick → draw |
+| Display | Resizable window at 3× scale by default; fullscreen-desktop with `-f`; F11 / Alt+Enter toggles |
+| Frame rate | 60 fps tick rate, paced from the refresh rate of the monitor the window is on; timer-gated main loop drives action → input → tick → draw |
 | Colour palette | 16 colours (ZX Spectrum-inspired); per-pixel colouring eliminates colour clash |
 | Audio | SDL_mixer at 22 050 Hz stereo; OGG music tracks; OGG SFX; synthesised square-wave miner notes (128 pitches, equal temperament) |
 | Fonts | SDL_ttf — pixeldroid Console (small), PressStart2P (large), MANICMINER-Regular (title/extra-large) |
-| Sprite format | 32×32 px hi-res sprites loaded from PNG (miner, NPCs, portals, boot); collisions use the 16×16 bitmaps from `levels.json` (16 rows of u16). Tiles are drawn from `gfx/sprites/tiles.png`: a row per level, a 16×16 cell per gfx slot; opaque pixels take the tile's ink, the rest its paper. the editor shows the same sheet (`make web` copies it to `web/tiles.png`) but does not edit it |
-| Level format | JSON (`levels.json`) — tile grid, tile info, NPCs, miner start, portal data |
+| Sprite format | 32×32 px hi-res sprites loaded from PNG (miner, NPCs, portals, boot); collisions use the 16×16 bitmaps from `levels.json` (16 rows of u16). Tiles are drawn from `gfx/sprites/tiles.png`: a row per level, a 16×16 cell per gfx slot (up to 16); opaque pixels take the tile's ink, the rest its paper. the editor shows the same sheet (`make web` copies it to `web/tiles.png`) but does not edit it |
+| Level format | JSON (`levels.json`) — tile grid, tile info (up to 16 slots), NPCs, miner start, portal data, optional switches and safe-fall flag |
 | Save format | Plain text key=value / CSV (`savestate_N.dat`, `gameconfig.dat`, `replay.dat`) |
 | Platforms | Linux (x64, arm64), macOS (arm64), Windows x64 (MSYS2 MINGW64), WebAssembly (Emscripten) |
 | Build | `make` (Linux/macOS), `make web` (Emscripten); CI via GitHub Actions |
@@ -138,8 +141,8 @@ Controllers are opened automatically on connect and fall back gracefully on disc
 ### High Scores
 
 - A global high score is tracked for the current session and shown in the HUD.
-- A **per-level high score** is stored for each of the 20 levels, persisted to `gameconfig.dat` between sessions.
-- The per-level high score table is viewable from the title screen with `S`.
+- A **per-level high score** is stored for each level, persisted to `gameconfig.dat` between sessions.
+- The per-level high score table is viewable from the title screen with `S`, 20 levels per page; any key shows the next page.
 - The global high score updates live whenever the current score exceeds it.
 
 ### Save States
@@ -184,6 +187,16 @@ When all items are collected and the portal is entered, remaining air is convert
 
 When lives reach zero the game-over sequence plays: a boot falls and kicks the miner off the plinth with colour-cycling text, then returns to the title screen.
 
+### Deeper and Down Mechanics
+
+Levels 21–61 use mechanics from JSW64:
+
+- **Trampolines** bounce the miner back up whenever he stands on one.
+- **Ramps** carry the miner up or down a cell at a time as he walks along them.
+- **Switches** can open walls and change how a guardian moves, or remove it.
+- Some levels have **safe falls**: a fall of any height is survived.
+- *Up Up and Away* (level 61) has no items, so its portal is open from the start.
+
 ### Victory
 
 Entering the portal on the final level triggers the victory sequence (swordfish animation), then wraps back to level 1.
@@ -212,10 +225,10 @@ A browser-based level editor lives in `web/editor/`. Load it by serving the dire
 Features:
 - Paint, erase, and flood-fill tile slots across the 32×16 tile grid.
 - Per-slot tile type, paper and ink, previewed with the tile art from `tiles.png` (edit the art itself in an image editor).
-- Tile type assignment (space, solid, floor, item, collapse, conveyor, harm, void, switch).
+- Tile type assignment (space, solid, floor, item, collapse, conveyor, harm, void, switch, trampoline, ramp).
 - NPC placement with patrol range, sprite, speed, and ink editing.
 - Portal and miner-start placement.
-- Sprite designer for NPC sprites (palette-indexed 16×16, 8 frames per type, 29 types).
+- Sprite designer for NPC sprites (palette-indexed 16×16, 8 frames per type, up to 96 types).
 - Import / export `levels.json`.
 - Export `miner.png` and `npcs.png` sprite sheets for the hi-res renderer.
 
