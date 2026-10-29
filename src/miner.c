@@ -198,7 +198,7 @@ void do_miner_ticker() {
             return;
         }
         if (type[0] > T_SPACE || type[1] > T_SPACE) {
-            if (miner_air >= 12) {
+            if (miner_air >= 12 && !level_safe_fall()) {
                 action = lives_action;
                 return;
             }
@@ -236,7 +236,8 @@ void do_miner_ticker() {
                     miner_move = 1;
                 }
             }
-            if (system_is_key(KEY_JUMP)) {
+            // A trampoline throws the miner straight back up, as if jump were pressed.
+            if (system_is_key(KEY_JUMP) || type[0] == T_TRAMP || type[1] == T_TRAMP) {
                 miner_air = 1;
                 jump_stage = 0;
             }

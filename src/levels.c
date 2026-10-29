@@ -17,6 +17,7 @@ typedef struct {
     INFO    info[MAX_SLOTS];
     int     nswitches;
     SWITCH  switches[MAX_SWITCHES];
+    int     safe_fall;  // falls of any height are survived
 } LEVEL;
 
 static LEVEL    level_data[MAX_LEVELS];
@@ -272,6 +273,14 @@ const char *level_get_name(int level) {
 }
 
 static char level_names[MAX_LEVELS][64];
+
+void level_set_safe_fall(int idx, int safe_fall) {
+    if (idx >= 0 && idx < MAX_LEVELS) level_data[idx].safe_fall = safe_fall;
+}
+
+int level_safe_fall(void) {
+    return level_data[game_level].safe_fall;
+}
 
 void level_set_switches(int idx, int n, const SWITCH *switches) {
     if (idx < 0 || idx >= MAX_LEVELS || n < 0 || n > MAX_SWITCHES) return;

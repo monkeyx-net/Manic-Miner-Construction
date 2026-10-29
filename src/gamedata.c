@@ -154,6 +154,10 @@ static int load_level(JSON *entry, int i) {
 
     level_set_entry(i, json_string(name), data, slots, colours, types);
 
+    value = 0;
+    if (json_get(entry, "safe_fall") && !get_field(entry, "safe_fall", 0, 1, &value, where)) return 0;
+    level_set_safe_fall(i, value);
+
     // The air bar is 224 pixels; more air keeps it full for longer. 0 would kill at once.
     if (!get_field(entry, "air", 1, 65535, &value, where)) return 0;
     game_set_air(i, value);

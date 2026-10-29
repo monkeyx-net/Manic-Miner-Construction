@@ -140,6 +140,8 @@ typedef struct {
 } SWITCH;
 
 void level_set_switches(int idx, int n, const SWITCH *switches);
+void level_set_safe_fall(int idx, int safe_fall);
+int  level_safe_fall(void);
 void level_restore_switches(void);
 void level_init(void);
 void level_ticker(void);
