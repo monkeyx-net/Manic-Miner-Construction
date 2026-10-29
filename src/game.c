@@ -290,6 +290,10 @@ static void do_game_init() {
     npcs_init();
     portal_init();
     portal_ticker = do_nothing;
+    // A level with no items (Up Up and Away) starts with its portal open.
+    if (level_all_items_collected()) {
+        portal_ready();
+    }
     miner_init();
     if (game_level == SOLAR_POWERED_GENERATOR) {
         solar_powered_generator_drawer = do_solar_powered_generator_drawer;
