@@ -10,7 +10,7 @@ export const GRID_W = 32;
 export const GRID_H = 16;
 
 // Tile types (from game.h) that form walkable platform surfaces
-const PLATFORM_TYPES = new Set([5, 6, 7, 8]); // Floor, Collapse, Conveyor L/R
+const PLATFORM_TYPES = new Set([5, 6, 7, 8, 11, 12, 13]); // Floor, Collapse, Conveyor L/R, Trampoline, Ramps
 
 // Maximum horizontal distance in pixels that the miner can jump.
 // Derived from src/miner.c: a jump lasts 18 frames, and MoveLeftRight() is called every frame.
