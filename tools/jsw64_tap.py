@@ -488,6 +488,19 @@ class Importer:
             self.sprite_names.append(name)
         return BASE_SPRITES + self.sprite_ids[key]
 
+    def guardian_sprite(self, page, b0, b1, b2, horizontal, name):
+        """JSW64 draws frame ((b1 & b0) | b2) >> 5: byte 1 masks byte 0's frame (bits 5-6)
+        and direction (bit 7: 0 left, 1 right), byte 2 adds a base. Builds the 8 frames
+        the port shows: 0-3 walking right, 4-7 walking left (drawn unmirrored) or, for
+        vertical movers, a cycle of all 8."""
+        mask, base = b1 >> 5, b2 >> 5
+        if horizontal:
+            order = [((4 | k) & mask) | base for k in range(4)] + [(k & mask) | base for k in range(4)]
+        else:
+            right = (b0 >> 7) << 2
+            order = [((right | (p & 3)) & mask) | base for p in range(8)]
+        return self.sprite(b''.join(bytes(page[f * 32:f * 32 + 32]) for f in order), name)
+
     def note(self, level, text):
         self.notes.append('%d %s: %s' % (level, self.room.name, text))
 
@@ -590,10 +603,11 @@ class Importer:
     def npc(self, gd, room):
         b = gd.b
         ink = port_ink(b[1] | (0x40 if b[1] & 8 else 0))
-        gfx = self.sprite(self.page(gd, room), '%s %d' % (room.name, gd.page))
-        nframes = 7 if b[1] >> 5 == 7 else 3
-        n = {'x': gd.x, 'y': gd.y // 8, 'gfx': gfx, 'ink': ink, 'nframes': nframes,
-             'frame': gd.frame & nframes, 'solar_powered_generator': 0}
+        gfx = self.guardian_sprite(self.page(gd, room), b[0], b[1], b[2], gd.kind == 'horizontal',
+                                   '%s %d' % (room.name, gd.page))
+        frame = (b[0] >> 5) & 3
+        n = {'x': gd.x, 'y': gd.y // 8, 'gfx': gfx, 'ink': ink, 'nframes': 7,
+             'frame': frame, 'solar_powered_generator': 0, 'mirror': 0}
         if gd.y % 8:
             self.note(self.idx, 'guardian at y=%d rounded to row %d' % (gd.y, gd.y // 8))
         if gd.kind == 'horizontal':
@@ -605,7 +619,8 @@ class Importer:
                 move = MOVE_LEFT
             if b[7] & 0x80:
                 self.note(self.idx, 'double-speed guardian runs at normal speed')
-            n.update(min=lo * 8, max=hi * 8, move=move, speed=1 if b[7] & 0x20 else 0)
+            n.update(min=lo * 8, max=hi * 8, move=move, speed=1 if b[7] & 0x20 else 0,
+                     frame=frame if move == MOVE_RIGHT else 4 + frame)
         else:
             dy = b[4] - 256 if b[4] & 0x80 else b[4]
             n.update(min=b[6] // 2, max=b[7] // 2, move=MOVE_UP if dy < 0 else MOVE_DOWN,
@@ -643,7 +658,7 @@ class Importer:
             return {'slot': slot, 'active': 0}
         nb = bytes([b[3]]) + target.b[1:4] + b[4:8]
         page = self.game.mem(b[5] << 8, 256, room.raw)
-        gfx = self.sprite(page, '%s %d' % (room.name, b[5]))
+        gfx = self.guardian_sprite(page, nb[0], nb[1], nb[2], kind == 1, '%s %d' % (room.name, b[5]))
         if kind == 1:
             lo, hi = nb[6] & 31, nb[7] & 31
             return {'slot': slot, 'move': MOVE_RIGHT if nb[0] & 0x80 else MOVE_LEFT,

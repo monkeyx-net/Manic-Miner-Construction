@@ -187,6 +187,11 @@ static int load_npcs(JSON *entry, int level, int sprites) {
             if (!get_field(r, keys[k], lo[k], hi[k], &v[k], where)) return 0;
         }
         npcs_set_start(level, slot, v[0], v[1], v[2], v[3], v[4], v[5], v[6], (u8)v[7], v[8], v[9], v[10]);
+        // Optional: 0 draws frames 4-7 as they are when moving left, instead of mirroring 3-0.
+        if (json_get(r, "mirror")) {
+            if (!get_field(r, "mirror", 0, 1, &v[0], where)) return 0;
+            npcs_set_mirror(level, slot, v[0]);
+        }
     }
     return 1;
 }

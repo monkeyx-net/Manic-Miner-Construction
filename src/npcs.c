@@ -17,6 +17,7 @@ typedef struct {
     int     nframes; 
     int     frame;
     int     tile;
+    int     mirror;     // left-facing frames are frames 0-3 mirrored, not frames 4-7
 } NPC;
 
 static u16      npc_sprite[MAX_NPC_SPRITES][8][16];
@@ -168,10 +169,11 @@ void npcs_ticker() {
 }
 
 // Horizontal walkers with an 8-frame cycle are drawn like the miner: frames 0-3 face
-// right, and left-facing frames 4-7 are frames 3-0 mirrored instead of separate art.
+// right, and left-facing frames 4-7 are frames 3-0 mirrored instead of separate art,
+// unless the NPC has its own left-facing art (mirror 0).
 static int npc_is_mirrored(const NPC *npc, int *fi) {
     *fi = npc->frame & npc->nframes;
-    if (npc->nframes != 7 || *fi < 4) return 0;
+    if (!npc->mirror || npc->nframes != 7 || *fi < 4) return 0;
     if (npc->DoMove != do_npc_left && npc->DoMove != do_npc_right) return 0;
     *fi = 7 - *fi;
     return 1;
@@ -344,6 +346,12 @@ void npcs_set_start(int level, int slot, int x, int y, int min, int max,
     r->nframes = nframes;
     r->frame   = frame;
     r->tile    = 0;
+    r->mirror  = 1;
+}
+
+void npcs_set_mirror(int level, int slot, int mirror) {
+    if (level < 0 || level >= MAX_LEVELS || slot < 0 || slot >= 8) return;
+    npc_start[level][slot].mirror = mirror;
 }
 
 // Copies start positions into the live NPC array, applying Skylab (start at min y)
@@ -371,5 +379,6 @@ void npcs_init() {
         npc->ink = start->ink;
         npc->nframes = start->nframes;
         npc->frame = start->frame;
+        npc->mirror = start->mirror;
     }
 }

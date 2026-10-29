@@ -221,6 +221,7 @@ void npcs_clear_level(int level);
 void npcs_set_start(int level, int slot, int x, int y, int min, int max,
                      int move_id, int speed, int gfx_idx, u8 ink,
                      int nframes, int frame, int solar_powered_generator);
+void npcs_set_mirror(int level, int slot, int mirror);
 void npcs_mark_solar_powered_generator_tiles(void);
 int  npcs_sprite_count(void);
 void npcs_set_sprite_count(int);
